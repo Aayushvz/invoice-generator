@@ -1,26 +1,9 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React from "react";
 
 // RHF
 import { useFieldArray, useFormContext } from "react-hook-form";
-
-// DnD
-import {
-    DndContext,
-    closestCenter,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
-    DragEndEvent,
-    DragOverlay,
-    UniqueIdentifier,
-} from "@dnd-kit/core";
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 
 // Components
 import { BaseButton, SingleItem, Subheading, VoiceInput } from "@/app/components";
@@ -35,7 +18,7 @@ import { Plus } from "lucide-react";
 import { InvoiceType } from "@/types";
 
 const Items = () => {
-    const { control, setValue } = useFormContext<InvoiceType>();
+    const { control } = useFormContext<InvoiceType>();
 
     const { _t } = useTranslationContext();
 
@@ -82,60 +65,24 @@ const Items = () => {
         }
     };
 
-    // DnD
-    const [activeId, setActiveId] = useState<UniqueIdentifier>();
-
-    const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
-
-    const handleDragEnd = useCallback(
-        async (event: DragEndEvent) => {
-            const { active, over } = event;
-            setActiveId(active.id);
-
-            if (active.id !== over?.id) {
-                const oldIndex = fields.findIndex(
-                    (item) => item.id === active.id
-                );
-                const newIndex = fields.findIndex(
-                    (item) => item.id === over?.id
-                );
-
-                move(oldIndex, newIndex);
-            }
-        },
-        [fields, setValue]
-    );
-
     return (
         <section className="flex flex-col gap-2 w-full">
             <Subheading>{_t("form.steps.lineItems.heading")}</Subheading>
-            <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={(event) => {
-                    const { active } = event;
-                    setActiveId(active.id);
-                }}
-                onDragEnd={handleDragEnd}
-            >
-                <SortableContext
-                    items={fields}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {fields.map((field, index) => (
-                        <SingleItem
-                            key={field.id}
-                            name={ITEMS_NAME}
-                            index={index}
-                            fields={fields}
-                            field={field}
-                            moveFieldUp={moveFieldUp}
-                            moveFieldDown={moveFieldDown}
-                            removeField={removeField}
-                        />
-                    ))}
-                </SortableContext>
-            </DndContext>
+            {/* Reordering is the up/down pair on each row. Drag-and-drop
+                was a third control for it, behind a grip that gave no hint
+                of where a row could go and could not be operated from a
+                keyboard at all. */}
+            {fields.map((field, index) => (
+                <SingleItem
+                    key={field.id}
+                    name={ITEMS_NAME}
+                    index={index}
+                    fields={fields}
+                    moveFieldUp={moveFieldUp}
+                    moveFieldDown={moveFieldDown}
+                    removeField={removeField}
+                />
+            ))}
             <div className="flex flex-wrap gap-2">
                 {/* outline, not filled: Next is this panel's primary and
                     adding a row is the step's own secondary action. Two

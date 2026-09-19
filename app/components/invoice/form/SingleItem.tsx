@@ -3,11 +3,7 @@
 import { useEffect } from "react";
 
 // RHF
-import { FieldArrayWithId, useFormContext, useWatch } from "react-hook-form";
-
-// DnD
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useFormContext, useWatch } from "react-hook-form";
 
 // ShadCn
 
@@ -18,10 +14,9 @@ import { BaseButton, FormInput, FormTextarea } from "@/app/components";
 import { useTranslationContext } from "@/contexts/TranslationContext";
 
 // Utils
-import { cn } from "@/lib/utils";
 
 // Icons
-import { ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 // Types
 import { ItemType, NameType } from "@/types";
@@ -30,7 +25,6 @@ type SingleItemProps = {
     name: NameType;
     index: number;
     fields: ItemType[];
-    field: FieldArrayWithId<ItemType>;
     moveFieldUp: (index: number) => void;
     moveFieldDown: (index: number) => void;
     removeField: (index: number) => void;
@@ -40,7 +34,6 @@ const SingleItem = ({
     name,
     index,
     fields,
-    field,
     moveFieldUp,
     moveFieldDown,
     removeField,
@@ -84,36 +77,10 @@ const SingleItem = ({
         }
     }, [rate, quantity]);
 
-    // DnD
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id: field.id });
-
-    const style = {
-        transition,
-        transform: CSS.Transform.toString(transform),
-    };
-
-    const boxDragClasses = isDragging ? "z-10 cgItem--dragging" : "";
-
-    const gripDragClasses = isDragging
-        ? "opacity-0 group-hover:opacity-100 transition-opacity cursor-grabbing"
-        : "cursor-grab";
+    
 
     return (
-        <div
-            style={style}
-            {...attributes}
-            className={cn(
-                "cgItem group my-2 flex cursor-default flex-col gap-y-5 p-3 transition-colors",
-                boxDragClasses
-            )}
-        >
+        <div className="cgItem group my-2 flex cursor-default flex-col gap-y-5 p-3 transition-colors">
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="cgItem__title">
                     <span className="cgItem__ord">{index + 1}</span>
@@ -127,15 +94,6 @@ const SingleItem = ({
                 </p>
 
                 <div className="cgItem__tools">
-                    {/* Drag and Drop Button */}
-                    <div
-                        className={`${gripDragClasses} cgItem__grip`}
-                        ref={setNodeRef}
-                        {...listeners}
-                    >
-                        <GripVertical className="h-4 w-4" />
-                    </div>
-
                     {/* Up Button. Ghost, not filled: reordering is
                         housekeeping, and two solid accent blocks at the top
                         of every line item were the loudest thing on the

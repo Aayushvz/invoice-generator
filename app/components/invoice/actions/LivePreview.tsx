@@ -9,7 +9,7 @@ import { useLocale, useMessages } from "next-intl";
 import { useFormContext } from "react-hook-form";
 
 // Components
-import { DynamicInvoiceTemplate, Subheading } from "@/app/components";
+import { DynamicInvoiceTemplate } from "@/app/components";
 
 // Labels
 import { buildInvoiceLabels } from "@/app/components/templates/invoice-pdf/invoiceLabels";
@@ -118,9 +118,9 @@ function LivePreview({ data, fit = true }: LivePreviewProps) {
              * tinted ground — the shape says what it is. Kept below `shell`,
              * where the preview shares a plain background with the form.
              */}
-            <div className="shell:hidden">
-                <Subheading>{_t("actions.livePreview")}</Subheading>
-            </div>
+            {/* no "Live Preview" caption. It only ever rendered below the
+                shell breakpoint, and on a phone the tab bar already names
+                the surface you are looking at. */}
 
             {/*
              * Three nested boxes, each doing one job:

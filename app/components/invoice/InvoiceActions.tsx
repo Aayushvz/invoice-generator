@@ -3,21 +3,14 @@
 import { useState } from "react";
 
 // ShadCn
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Components
 import {
     PdfViewer,
-    BaseButton,
     NewInvoiceAlert,
     InvoiceLoaderModal,
     InvoiceExportModal,
-    TemplateGallery,
 } from "@/app/components";
 
 // Contexts
@@ -29,12 +22,10 @@ import { useIsDesktop } from "@/hooks/useMediaQuery";
 
 // Icons
 import {
-    FileInput,
     FolderUp,
     Import,
     Maximize2,
     Minimize2,
-    MoreHorizontal,
     Plus,
     RotateCcw,
 } from "lucide-react";
@@ -68,63 +59,13 @@ const InvoiceActions = () => {
      * primary action plus an overflow menu, so the preview is the thing your
      * eye lands on.
      */
-    const secondaryActions = (
-        <div className="flex flex-col gap-1">
-            <InvoiceLoaderModal>
-                <BaseButton
-                    variant="ghost"
-                    className="w-full justify-start"
-                    disabled={invoicePdfLoading}
-                >
-                    <FolderUp className="h-4 w-4" />
-                    {_t("actions.loadInvoice")}
-                </BaseButton>
-            </InvoiceLoaderModal>
-
-            <InvoiceExportModal>
-                <BaseButton
-                    variant="ghost"
-                    className="w-full justify-start"
-                    disabled={invoicePdfLoading}
-                >
-                    <Import className="h-4 w-4" />
-                    {_t("actions.exportInvoice")}
-                </BaseButton>
-            </InvoiceExportModal>
-
-            <NewInvoiceAlert>
-                <BaseButton
-                    variant="ghost"
-                    className="w-full justify-start"
-                    disabled={invoicePdfLoading}
-                >
-                    <Plus className="h-4 w-4" />
-                    {_t("actions.newInvoice")}
-                </BaseButton>
-            </NewInvoiceAlert>
-
-            <NewInvoiceAlert
-                title={_t("actions.resetFormTitle")}
-                description={_t("actions.resetFormDescription")}
-                confirmLabel={_t("actions.resetFormConfirm")}
-                onConfirm={newInvoice}
-            >
-                <BaseButton
-                    variant="ghost"
-                    className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    disabled={invoicePdfLoading}
-                >
-                    <RotateCcw className="h-4 w-4" />
-                    {_t("actions.resetForm")}
-                </BaseButton>
-            </NewInvoiceAlert>
-        </div>
-    );
 
     return (
-        // The preview pane sits on the tinted ground, so the invoice reads as a
-        // sheet of paper on a desk rather than as another panel.
-        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:bg-ground">
+        /* No background of its own. .cgCol--paper already draws the
+           dotted ground the sheet sits on, and shell:bg-ground painted a
+           second, lighter panel over it - so the invoice read as a card
+           inside a card instead of paper on a desk. */
+        <div className="min-w-0 shell:flex shell:min-h-0 shell:flex-col">
             {/*
              * Sticky is the fallback for tall-enough-but-short viewports; in
              * the shell the column is a flex child that fills the pinned
@@ -139,24 +80,60 @@ const InvoiceActions = () => {
                  * preview" above an invoice preview; the chips use that space
                  * to say something the user can act on.
                  */}
-                <div className="mb-3 hidden items-center justify-between gap-3 xl:flex shell:px-5 shell:pt-5">
-                    {/* the appearance controls used to sit here as a pill row
-                        floating over the preview. They are groups in the
-                        DOCUMENT panel now (see layout/DocumentPanel.tsx), so
-                        this row is just the heading again at every width. */}
-                    <h2 className="text-sm font-medium text-muted-foreground">
-                        {_t("actions.previewTitle")}
-                    </h2>
+                {/*
+                 * The options, as buttons.
+                 *
+                 * This was a heading that said "Invoice preview" above an
+                 * invoice preview, with the four things you can actually do
+                 * hidden behind a "..." menu. The heading named what was
+                 * already obvious and the menu hid what was not, so the row
+                 * now spends its space on the actions themselves - the
+                 * arrangement /contract uses above its own sheet.
+                 */}
+                <div className="cgEditBar shell:px-5 shell:pt-5">
+                    <div className="cgEditBar__actions">
+                        <InvoiceLoaderModal>
+                            <button
+                                type="button"
+                                className="cgGhostLabel"
+                                disabled={invoicePdfLoading}
+                            >
+                                <FolderUp className="h-4 w-4" />
+                                {_t("actions.loadInvoice")}
+                            </button>
+                        </InvoiceLoaderModal>
 
-                    <div className="flex shrink-0 items-center gap-2">
-                        {/* Fit / actual size — shell only, where the pane has a
-                            fixed height to fit against. */}
-                        <BaseButton
-                            variant="ghost"
-                            size="icon"
-                            className="hidden shell:inline-flex"
+                        <InvoiceExportModal>
+                            <button
+                                type="button"
+                                className="cgGhostLabel"
+                                disabled={invoicePdfLoading}
+                            >
+                                <Import className="h-4 w-4" />
+                                {_t("actions.exportInvoice")}
+                            </button>
+                        </InvoiceExportModal>
+
+                        <NewInvoiceAlert>
+                            <button
+                                type="button"
+                                className="cgGhostLabel"
+                                disabled={invoicePdfLoading}
+                            >
+                                <Plus className="h-4 w-4" />
+                                {_t("actions.newInvoice")}
+                            </button>
+                        </NewInvoiceAlert>
+                    </div>
+
+                    <div className="cgEditBar__actions">
+                        {/* Fit / actual size - shell only, where the pane has
+                            a fixed height to fit against */}
+                        <button
+                            type="button"
+                            className="cgGhost hidden shell:inline-flex"
                             aria-pressed={fitToPane}
-                            tooltipLabel={
+                            title={
                                 fitToPane
                                     ? _t("actions.actualSize")
                                     : _t("actions.fitToScreen")
@@ -173,28 +150,23 @@ const InvoiceActions = () => {
                             ) : (
                                 <Minimize2 className="h-4 w-4" />
                             )}
-                        </BaseButton>
+                        </button>
 
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <BaseButton
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label={_t("actions.moreActions")}
-                                    disabled={invoicePdfLoading}
-                                >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </BaseButton>
-                            </PopoverTrigger>
-                            <PopoverContent align="end" className="w-56 p-1.5">
-                                {secondaryActions}
-                            </PopoverContent>
-                        </Popover>
-
-                        {/* Generate PDF lives in the toolbar now, beside the
-                            theme toggle, so the view has exactly one filled
-                            control and it is in the same place as the tool
-                            this matches. See layout/ToolBar.tsx. */}
+                        <NewInvoiceAlert
+                            title={_t("actions.resetFormTitle")}
+                            description={_t("actions.resetFormDescription")}
+                            confirmLabel={_t("actions.resetFormConfirm")}
+                            onConfirm={newInvoice}
+                        >
+                            <button
+                                type="button"
+                                className="cgGhostLabel cgEditBar__danger"
+                                disabled={invoicePdfLoading}
+                            >
+                                <RotateCcw className="h-4 w-4" />
+                                {_t("actions.resetForm")}
+                            </button>
+                        </NewInvoiceAlert>
                     </div>
                 </div>
 
@@ -219,15 +191,9 @@ const InvoiceActions = () => {
                  * carries the secondary actions. Generate and Preview live in
                  * the sticky MobileActionBar.
                  */}
-                <div className="xl:hidden">
-                    <div className="border-t border-border pt-5">
-                        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            {_t("actions.title")}
-                        </h2>
-                        {secondaryActions}
-                    </div>
-                </div>
-            </div>
+                {/* the phone duplicate of these four actions is gone: the
+                    bar above renders at every width now, so there is one
+                    list of actions instead of two that could drift. */}           </div>
         </div>
     );
 };

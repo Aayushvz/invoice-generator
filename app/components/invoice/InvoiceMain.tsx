@@ -12,6 +12,7 @@ import {
     InvoiceForm,
     MobileActionBar,
 } from "@/app/components";
+import ToolBar from "@/app/components/layout/ToolBar";
 
 // Context
 import { useInvoiceContext } from "@/contexts/InvoiceContext";
@@ -37,6 +38,7 @@ const InvoiceMain = () => {
                 {/* no data-cg-theme: the tokens follow next-themes'
                     .dark class on <html>, see app/design.css */}
                 <div className="cgShell">
+                    <ToolBar />
                     <div className="cgGrid">
                         <div className="cgCol cgCol--form">
                             <InvoiceForm />

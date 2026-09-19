@@ -34,10 +34,9 @@ const InvoiceMain = () => {
     return (
         <Form {...formContext}>
             <form onSubmit={handleSubmit(onFormSubmit, formValidationError)}>
-                <div
-                    className="cgShell"
-                    data-cg-theme="light"
-                >
+                {/* no data-cg-theme: the tokens follow next-themes'
+                    .dark class on <html>, see app/design.css */}
+                <div className="cgShell">
                     <div className="cgGrid">
                         <div className="cgCol cgCol--form">
                             <InvoiceForm />

@@ -109,8 +109,7 @@ const Providers = ({ children }: ProvidersProps) => {
     <DirectionProvider dir={dir}>
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="dark"
       disableTransitionOnChange
     >
       <TranslationProvider>

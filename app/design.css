@@ -115,7 +115,23 @@
     color var(--dur-state) var(--ease-quint);
 }
 
-.cgShell[data-cg-theme="light"] {
+/*
+  This app already has a light/dark switch: next-themes, writing .dark on
+  <html>. Keying the shell's tokens off a second, hand-set data attribute
+  is what left the chrome rendering cream while every shadcn control in it
+  rendered dark. So the class is the single source of truth and these
+  blocks follow it.
+
+  The data attribute is kept as the higher-specificity selector so a copy
+  of this stylesheet dropped into a route that has no next-themes (the way
+  /contract uses it) still works unchanged, and so one subtree can be
+  pinned to a theme deliberately. Nothing sets it in this app.
+
+  The tokens still land on .cgShell and never on :root, which is the whole
+  justification for a route having its own theme at all.
+*/
+.cgShell[data-cg-theme="light"],
+html:not(.dark) .cgShell {
   /* the toolbar toggle is the only thing that moves this, so it has to move
      the native chrome with it: without a scheme here the inputs, scrollbars
      and autofill inside the panels follow the OS instead of the toggle. */
@@ -138,7 +154,8 @@
   --cg-dot: rgba(31, 31, 31, 0.09);
 }
 
-.cgShell[data-cg-theme="dark"] {
+.cgShell[data-cg-theme="dark"],
+html.dark .cgShell {
   color-scheme: only dark;
   --cg-bg: #121212;
   --cg-panel: #1a1a1a;

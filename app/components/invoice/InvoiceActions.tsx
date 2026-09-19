@@ -140,13 +140,13 @@ const InvoiceActions = () => {
                  * to say something the user can act on.
                  */}
                 <div className="mb-3 hidden items-center justify-between gap-3 xl:flex shell:px-5 shell:pt-5">
-                    {isDesktop ? (
-                        <TemplateGallery variant="chips" />
-                    ) : (
-                        <h2 className="text-sm font-medium text-muted-foreground">
-                            {_t("actions.previewTitle")}
-                        </h2>
-                    )}
+                    {/* the appearance controls used to sit here as a pill row
+                        floating over the preview. They are groups in the
+                        DOCUMENT panel now (see layout/DocumentPanel.tsx), so
+                        this row is just the heading again at every width. */}
+                    <h2 className="text-sm font-medium text-muted-foreground">
+                        {_t("actions.previewTitle")}
+                    </h2>
 
                     <div className="flex shrink-0 items-center gap-2">
                         {/* Fit / actual size — shell only, where the pane has a
@@ -191,15 +191,10 @@ const InvoiceActions = () => {
                             </PopoverContent>
                         </Popover>
 
-                        <BaseButton
-                            type="submit"
-                            tooltipLabel={_t("actions.generatePdfTooltip")}
-                            loading={invoicePdfLoading}
-                            loadingText={_t("actions.generatePdfLoading")}
-                        >
-                            <FileInput className="h-4 w-4" />
-                            {_t("actions.generatePdf")}
-                        </BaseButton>
+                        {/* Generate PDF lives in the toolbar now, beside the
+                            theme toggle, so the view has exactly one filled
+                            control and it is in the same place as the tool
+                            this matches. See layout/ToolBar.tsx. */}
                     </div>
                 </div>
 

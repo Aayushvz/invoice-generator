@@ -26,14 +26,21 @@ module.exports = {
                 /*
                  * The desktop app-shell breakpoint.
                  *
-                 * Height matters as much as width here: the shell pins the
-                 * page to the viewport and gives each pane its own scroll, and
-                 * on a 768px-tall laptop that leaves a form pane too short to
-                 * be usable. Below either threshold the layout falls back to
-                 * ordinary document scroll, which is also exactly what phones
-                 * get.
+                 * Width only. This also required min-height:800px, on the
+                 * reasoning that a short window leaves the form pane too
+                 * short to use. What it actually did was switch the whole
+                 * layout off on any laptop under 800px tall, while .cgShell
+                 * stayed height:100dvh regardless: the shell kept owning the
+                 * viewport but lost every style that made it a shell. The
+                 * page came back wrapped in container gutters, so the tool
+                 * sat in a padded box with dead strips down both sides, and
+                 * the form pane lost its own padding (shell:p-5) so the
+                 * fields sat flat against the panel border.
+                 *
+                 * A short window is answered by the panes scrolling, which
+                 * they already do, not by abandoning the layout.
                  */
-                shell: { raw: "(min-width: 1280px) and (min-height: 800px)" },
+                shell: { raw: "(min-width: 1280px)" },
             },
             colors: {
                 border: "hsl(var(--border))",

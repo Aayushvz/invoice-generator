@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
 import LogoMark from "@/app/components/reusables/LogoMark";
-import { MoonIcon, SunIcon } from "@/app/components/reusables/icons";
+import { FileDownIcon, MoonIcon, SunIcon } from "@/app/components/reusables/icons";
+import { useInvoiceContext } from "@/contexts/InvoiceContext";
+import { useTranslationContext } from "@/contexts/TranslationContext";
 
 /*
   The tool's own top bar, replacing BaseNavbar on the builder.
@@ -22,6 +24,8 @@ import { MoonIcon, SunIcon } from "@/app/components/reusables/icons";
 */
 const ToolBar = () => {
     const { resolvedTheme, setTheme } = useTheme();
+    const { invoicePdfLoading } = useInvoiceContext();
+    const { _t } = useTranslationContext();
 
     /* next-themes cannot know the theme until it has read localStorage on
        the client, so resolvedTheme is undefined for the first render.
@@ -48,6 +52,24 @@ const ToolBar = () => {
                 aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
             >
                 {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            {/*
+              The one filled control in the whole view, which is the rule
+              this design language is strictest about. It submits the form
+              it sits inside: ToolBar renders within InvoiceMain's <form>,
+              so type="submit" needs no handler of its own.
+            */}
+            <button
+                type="submit"
+                className="cgPrimary"
+                disabled={invoicePdfLoading}
+                title={_t("actions.generatePdfTooltip")}
+            >
+                <FileDownIcon />
+                {invoicePdfLoading
+                    ? _t("actions.generatePdfLoading")
+                    : _t("actions.generatePdf")}
             </button>
         </header>
     );

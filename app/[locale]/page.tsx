@@ -12,14 +12,21 @@ export default async function Home(props: {
 
     return (
         <>
-            {/* `pb-28 xl:pb-10` clears the sticky MobileActionBar, which only
-                renders below xl. */}
             {/*
-             * `shell:` strips the container so the two panes reach the window
-             * edges, as in the mockup. Below it the builder stays a normal
-             * page-width block.
+             * No container, no padding: the builder is an app shell, not a
+             * page. .cgShell is height:100dvh and owns the window, the way
+             * /contract does.
+             *
+             * This was gated on a `shell:` variant that required
+             * min-height:800px as well as min-width:1280px. On any window
+             * shorter than that the container came back and wrapped the
+             * shell in gutters, so a 100dvh layout sat inside a padded box
+             * with dead strips down both sides and along the top. Viewport
+             * HEIGHT has no business deciding whether a full-bleed layout
+             * is full-bleed; the narrow-width case is already handled by
+             * the tool's own breakpoints in design.css.
              */}
-            <main className="container py-6 pb-28 md:py-10 xl:pb-10 shell:max-w-none shell:px-0 shell:py-0 shell:pb-0">
+            <main>
                 {/*
                  * No Suspense boundary: WizardProvider reads the step from
                  * window.location rather than useSearchParams, so this page

@@ -393,13 +393,19 @@ const ChipMenu = ({
 type TemplateGalleryProps = {
     /**
      * `field` is the labelled thumbnail inside the Details step, used below xl.
-     * `chips` is the pill row above the invoice in the desktop preview
-     * toolbar, where option B puts template, accent and density.
+     * `panel` is the stacked set of groups in the DOCUMENT side panel, which
+     * is where these controls live on desktop now. It replaced `chips`, a
+     * pill row floating over the top of the preview: the pills sat on the
+     * document's own background with nothing to attach them to, and the tool
+     * this is being matched to keeps everything that restyles the artifact in
+     * one panel instead.
+     * `chips` is kept because it is still the compact form, and deleting a
+     * working variant is not this change's job.
      *
      * One component either way, so both entry points share a single dialog
      * instance rather than mounting two.
      */
-    variant?: "field" | "chips";
+    variant?: "field" | "chips" | "panel";
 };
 
 const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
@@ -514,7 +520,42 @@ const TemplateGallery = ({ variant = "field" }: TemplateGalleryProps) => {
     const chipSep = <span aria-hidden="true">·</span>;
 
     const trigger =
-        variant === "chips" ? (
+        variant === "panel" ? (
+            <>
+                <div className="cgSide__block">
+                    <p className="cgSide__eyebrow">{_t("gallery.templateLabel")}</p>
+                    <button
+                        type="button"
+                        className="cgSide__skinRow"
+                        onClick={() => handleOpenChange(true)}
+                        title={_t("gallery.changeTemplate")}
+                    >
+                        <span className="cgSide__skinName">{activeName}</span>
+                        <span className="cgSide__skinHint">
+                            {_t("gallery.changeTemplate")}
+                        </span>
+                    </button>
+                </div>
+
+                <div className="cgSide__block">
+                    <p className="cgSide__eyebrow">{_t("gallery.accent")}</p>
+                    <AccentControl theme={theme} setTheme={setTheme} />
+                </div>
+
+                {/* layout="list" rather than the chip row's popover: inside a
+                    300px panel the options have room to stack, so there is no
+                    reason to hide them behind a menu the way a pill must. */}
+                <div className="cgSide__block">
+                    <p className="cgSide__eyebrow">{_t("gallery.font")}</p>
+                    <FontControl theme={theme} setTheme={setTheme} layout="list" />
+                </div>
+
+                <div className="cgSide__block">
+                    <p className="cgSide__eyebrow">{_t("gallery.density")}</p>
+                    <DensityControl theme={theme} setTheme={setTheme} layout="list" />
+                </div>
+            </>
+        ) : variant === "chips" ? (
             <div
                 className="flex flex-wrap items-center gap-1.5"
                 aria-label={_t("gallery.appearanceControls")}

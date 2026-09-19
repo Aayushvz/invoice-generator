@@ -13,6 +13,7 @@ import {
     MobileActionBar,
 } from "@/app/components";
 import ToolBar from "@/app/components/layout/ToolBar";
+import DocumentPanel from "@/app/components/layout/DocumentPanel";
 
 // Context
 import { useInvoiceContext } from "@/contexts/InvoiceContext";
@@ -46,9 +47,7 @@ const InvoiceMain = () => {
                         <div className="cgCol cgCol--paper">
                             <InvoiceActions />
                         </div>
-                        <aside className="cgSide">
-                            {/* Empty for now, but required by contract.css cgGrid */}
-                        </aside>
+                        <DocumentPanel />
                     </div>
                 </div>
 

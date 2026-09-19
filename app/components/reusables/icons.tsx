@@ -42,6 +42,17 @@ export function SunIcon({ className }: IconProps) {
     );
 }
 
+/* a page with an arrow into it: "put this document out as a file" */
+export function FileDownIcon({ className }: IconProps) {
+    return (
+        <svg className={iconClass(className)} {...svgProps}>
+            <path d="M14.5 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z" />
+            <path d="M14.5 2.5V7H19" />
+            <path d="M12 11.5v5.5M9.75 14.75 12 17l2.25-2.25" />
+        </svg>
+    );
+}
+
 export function MoonIcon({ className }: IconProps) {
     return (
         <svg className={iconClass(className)} {...svgProps}>

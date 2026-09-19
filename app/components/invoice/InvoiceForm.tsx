@@ -5,6 +5,8 @@ import { useMemo } from "react";
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
 import FormFooter from "@/app/components/layout/FormFooter";
+import { PanelCollapseLeftIcon } from "@/app/components/reusables/icons";
+import { usePanels } from "@/contexts/PanelContext";
 
 // Components
 import {
@@ -22,6 +24,7 @@ import {
 import { useTranslationContext } from "@/contexts/TranslationContext";
 
 const InvoiceForm = () => {
+    const { formCollapsed, setFormCollapsed } = usePanels();
     const { _t } = useTranslationContext();
 
     const { control } = useFormContext();
@@ -63,11 +66,35 @@ const InvoiceForm = () => {
            gone: .cgCol--form already carries both, and two sources for one
            border is how they drift apart. */
         <div className="cgForm @container min-w-0">
+            {formCollapsed ? (
+                /* a 44px rail with the panel's name turned on its side, so
+                   the column still says what reopening it gets you */
+                <div className="cgPanelRail">
+                    <button
+                        type="button"
+                        className="cgGhost"
+                        onClick={() => setFormCollapsed(false)}
+                        aria-label="Expand the invoice details panel"
+                    >
+                        <PanelCollapseLeftIcon />
+                    </button>
+                    <p className="cgPanelRail__label">Invoice Details</p>
+                </div>
+            ) : (
+            <>
             {/* flush to the top of the column at --cg-bar-h, the same
                 height as the toolbar and the DOCUMENT panel's header, so
                 all three labels sit on one line across the app */}
             <div className="cgForm__bar">
                 <p className="cgForm__eyebrow">Invoice Details</p>
+                <button
+                    type="button"
+                    className="cgGhost cgSide__close"
+                    onClick={() => setFormCollapsed(true)}
+                    aria-label="Collapse the invoice details panel"
+                >
+                    <PanelCollapseLeftIcon />
+                </button>
             </div>
 
             {/* deliberately NOT a scroll container. .cgCol--form is the
@@ -157,6 +184,8 @@ const InvoiceForm = () => {
             </div>
 
             <FormFooter />
+            </>
+            )}
         </div>
     );
 };

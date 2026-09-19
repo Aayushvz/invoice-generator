@@ -203,16 +203,16 @@ const AccentControl = ({ theme, setTheme }: ThemeControlProps) => {
                          * mode. A ring the opposite way round from the surface
                          * gives every swatch an edge on either theme.
                          */
-                        "h-6 w-6 rounded-full border-2 ring-1 ring-inset ring-black/15 transition-transform hover:scale-110 dark:ring-white/25",
+                        "h-6 w-6 rounded-full border-2 ring-1 ring-inset ring-[var(--cg-line)] transition-transform hover:scale-110",
                         theme.accentColor === preset.value
-                            ? "border-foreground"
+                            ? "border-[var(--cg-fg)]"
                             : "border-transparent"
                     )}
                     style={{ backgroundColor: preset.value }}
                 />
             ))}
             <label
-                className="ms-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-dashed border-border text-[10px] text-muted-foreground"
+                className="ms-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-dashed border-[var(--cg-line)] text-[10px] text-[var(--cg-fg-2)]"
                 title={_t("gallery.customColor")}
                 style={
                     draftAccent
@@ -256,28 +256,36 @@ function OptionSet<T extends string>({
     optionStyle?: (id: T) => React.CSSProperties | undefined;
 }) {
     if (layout === "list") {
+        /*
+         * The same row the Template group above it uses, which is the row
+         * the contract generator's panel uses for every one-of-many choice.
+         * It was a list of accent-tinted buttons with a check icon on the
+         * chosen one: a third way of saying "selected" in a panel that
+         * already had one, and the only place in either tool where picking
+         * an option recoloured its label.
+         *
+         * role="radio" rather than aria-pressed: these are one-of-many, and
+         * a set of toggle buttons tells a screen reader each one is
+         * independently on or off.
+         */
         return (
-            <div className="flex flex-col">
+            <div className="cgSide__radiogroup" role="radiogroup">
                 {options.map((option) => {
                     const isActive = option.id === value;
                     return (
                         <button
                             key={option.id}
                             type="button"
+                            role="radio"
+                            aria-checked={isActive}
                             onClick={() => onSelect(option.id)}
-                            aria-pressed={isActive}
-                            className={cn(
-                                "flex items-center justify-between gap-4 rounded-md px-2 py-1.5 text-start text-sm transition-colors",
-                                isActive
-                                    ? "bg-primary/10 font-medium text-primary"
-                                    : "hover:bg-muted"
-                            )}
+                            data-selected={isActive}
+                            className="cgSide__skinRow"
                             style={optionStyle?.(option.id)}
                         >
-                            <span className="truncate">{option.label}</span>
-                            {isActive && (
-                                <Check className="h-3.5 w-3.5 shrink-0" />
-                            )}
+                            <span className="cgSide__skinName">
+                                {option.label}
+                            </span>
                         </button>
                     );
                 })}

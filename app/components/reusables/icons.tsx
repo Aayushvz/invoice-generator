@@ -61,6 +61,26 @@ export function MoonIcon({ className }: IconProps) {
     );
 }
 
+export function PanelCollapseLeftIcon({ className }: IconProps) {
+    return (
+      <svg className={iconClass(className)} {...svgProps}>
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+        <path d="M9 4.5v15" />
+        <path d="M6.5 12h-2m0 0 2-2m-2 2 2 2" />
+      </svg>
+    );
+}
+
+export function PanelCollapseRightIcon({ className }: IconProps) {
+    return (
+      <svg className={iconClass(className)} {...svgProps}>
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+        <path d="M15 4.5v15" />
+        <path d="M17.5 12h2m0 0-2-2m2 2-2 2" />
+      </svg>
+    );
+}
+
 /* ---------------------------------------------------------------
    Brand marks for the credit line. Filled, not stroked, and lifted
    verbatim from the portfolio's set rather than redrawn: Behance's is

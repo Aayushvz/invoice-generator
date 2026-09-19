@@ -1,6 +1,8 @@
 "use client";
 
 import { TemplateGallery } from "@/app/components";
+import { PanelCollapseRightIcon } from "@/app/components/reusables/icons";
+import { usePanels } from "@/contexts/PanelContext";
 
 /*
   The DOCUMENT panel: everything that changes how the invoice LOOKS, as
@@ -16,10 +18,38 @@ import { TemplateGallery } from "@/app/components";
   sit on one line straight across the app.
 */
 const DocumentPanel = () => {
+    const { sideCollapsed, setSideCollapsed } = usePanels();
+
+    if (sideCollapsed) {
+        return (
+            <aside className="cgSide" id="invoice-side-panel">
+                <div className="cgPanelRail">
+                    <button
+                        type="button"
+                        className="cgGhost"
+                        onClick={() => setSideCollapsed(false)}
+                        aria-label="Expand the document panel"
+                    >
+                        <PanelCollapseRightIcon />
+                    </button>
+                    <p className="cgPanelRail__label">Document</p>
+                </div>
+            </aside>
+        );
+    }
+
     return (
         <aside className="cgSide" id="invoice-side-panel">
             <div className="cgSide__bar">
                 <p className="cgSide__title">Document</p>
+                <button
+                    type="button"
+                    className="cgGhost cgSide__close"
+                    onClick={() => setSideCollapsed(true)}
+                    aria-label="Collapse the document panel"
+                >
+                    <PanelCollapseRightIcon />
+                </button>
             </div>
 
             {/* one instance, so the template dialog is mounted once: see the

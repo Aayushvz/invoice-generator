@@ -4,6 +4,7 @@ import LandingContent from "@/app/components/layout/LandingContent";
 
 // Contexts
 import { WizardProvider } from "@/contexts/WizardContext";
+import { PanelProvider } from "@/contexts/PanelContext";
 
 export default async function Home(props: {
     params: Promise<{ locale: string }>;
@@ -33,7 +34,9 @@ export default async function Home(props: {
                  * stays statically prerendered. See contexts/WizardContext.tsx
                  */}
                 <WizardProvider>
-                    <InvoiceMain />
+                    <PanelProvider>
+                        <InvoiceMain />
+                    </PanelProvider>
                 </WizardProvider>
             </main>
 

@@ -1,0 +1,54 @@
+"use client";
+
+import { createContext, useContext, useMemo, useState } from "react";
+
+/*
+  Which of the two side panels are collapsed.
+
+  It lives in context rather than in InvoiceMain because the state has
+  three consumers that are not in a line: the shell sets the data
+  attributes the CSS keys off, and each panel owns its own header button
+  and its own collapsed rail. Threading it through props would mean
+  InvoiceForm and DocumentPanel both taking a pair of props they only
+  pass to one button each.
+
+  Deliberately NOT persisted. Collapsing a panel is a thing you do to see
+  the document for a moment, not a preference, and a tool that reopens
+  with its form hidden looks broken.
+*/
+
+type PanelState = {
+    formCollapsed: boolean;
+    setFormCollapsed: (v: boolean) => void;
+    sideCollapsed: boolean;
+    setSideCollapsed: (v: boolean) => void;
+};
+
+const PanelContext = createContext<PanelState | null>(null);
+
+export function PanelProvider({ children }: { children: React.ReactNode }) {
+    const [formCollapsed, setFormCollapsed] = useState(false);
+    const [sideCollapsed, setSideCollapsed] = useState(false);
+
+    const value = useMemo(
+        () => ({
+            formCollapsed,
+            setFormCollapsed,
+            sideCollapsed,
+            setSideCollapsed,
+        }),
+        [formCollapsed, sideCollapsed]
+    );
+
+    return (
+        <PanelContext.Provider value={value}>{children}</PanelContext.Provider>
+    );
+}
+
+export function usePanels(): PanelState {
+    const ctx = useContext(PanelContext);
+    if (!ctx) {
+        throw new Error("usePanels must be used inside a PanelProvider");
+    }
+    return ctx;
+}

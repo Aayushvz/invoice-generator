@@ -19,7 +19,7 @@ export const ENV = process.env.NODE_ENV;
  * current production host. No trailing slash.
  */
 export const BASE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://invoify.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://invoice.aayushvisuals.com"
 ).replace(/\/$/, "");
 export const AUTHOR_WEBSITE = "https://aliabb.vercel.app";
 export const AUTHOR_GITHUB = "https://github.com/al1abb";

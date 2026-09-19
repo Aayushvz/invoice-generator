@@ -1,5 +1,3 @@
-// Components
-import { BaseFooter, BaseNavbar } from "@/app/components";
 import "@/app/design.css";
 // ShadCn
 import { Toaster } from "@/components/ui/toaster";
@@ -31,7 +29,6 @@ import {
 // Vercel Analytics
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
-import Script from "next/script";
 // Next Intl
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "@/i18n/messages";
@@ -72,7 +69,7 @@ export async function generateMetadata(props: {
         },
         openGraph: {
             type: "website",
-            siteName: "Invoify",
+            siteName: "Invoice Generator - aayushvz",
             title,
             description,
             url: localePath(locale),
@@ -159,23 +156,13 @@ export default async function LocaleLayout(props: {
                         <Analytics />
 
                         {/*
-                         * Buy Me a Coffee widget. Loaded via next/script with
-                         * lazyOnload so this third party does not block parsing
-                         * — it was previously a synchronous <script> in <head>.
-                         */}
-                        <Script
-                            src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
-                            strategy="lazyOnload"
-                            data-name="BMC-Widget"
-                            data-cfasync="false"
-                            data-id="aliabb"
-                            data-description="Support me on Buy me a coffee!"
-                            data-message="Thank you for using Invoify"
-                            data-color="#5F7FFF"
-                            data-position="Right"
-                            data-x_margin="18"
-                            data-y_margin="18"
-                        />
+                          The upstream project's Buy Me a Coffee widget used to
+                          sit here, still carrying its author's account id. On a
+                          fork that is someone else's donation button on your
+                          site, collecting on your traffic, so it is gone rather
+                          than renamed - and with it a third-party script and
+                          its CDN round-trip.
+                        */}
                     </Providers>
                 </NextIntlClientProvider>
             </body>

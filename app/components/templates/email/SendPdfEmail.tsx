@@ -9,19 +9,16 @@ import {
     Preview,
     Section,
     Text,
-    Img,
 } from "@react-email/components";
 import { Tailwind } from "@react-email/tailwind";
 
 // Variables
-import { BASE_URL } from "@/lib/variables";
 
 type SendPdfEmailProps = {
     invoiceNumber: string;
 };
 
 export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
-    const logo = `${BASE_URL}/assets/img/invoify-logo.png`;
     return (
         <Html>
             <Head />
@@ -32,14 +29,15 @@ export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
                 <Body className="bg-gray-100">
                     <Container>
                         <Section className="bg-white border-black-950 my-10 px-10 py-4 rounded-md">
-                            <Img
-                                src={logo}
-                                alt="Invoify Logo"
-                                width={200}
-                                height={120}
-                            />
+                            {/* set as text, not an <Img>. Mail clients block
+                                remote images by default, so a logo served from
+                                the site is a broken frame in most inboxes on
+                                first open; the wordmark as type always renders. */}
+                            <Text className="m-0 text-lg font-semibold tracking-tight text-black">
+                                aayush<span style={{ color: "#8B5CF6" }}>vz</span>
+                            </Text>
                             <Heading className="leading-tight">
-                                Thanks for using Invoify!
+                                Thanks for using Invoice Generator!
                             </Heading>
 
                             <Text>
@@ -54,7 +52,7 @@ export default function SendPdfEmail({ invoiceNumber }: SendPdfEmailProps) {
                             <Text>
                                 Best Regards,
                                 <br />
-                                Invoify Team
+                                Aayush Raj
                             </Text>
                         </Section>
                     </Container>

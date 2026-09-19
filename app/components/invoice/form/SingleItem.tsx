@@ -10,8 +10,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 // ShadCn
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 // Components
 import { BaseButton, FormInput, FormTextarea } from "@/app/components";
@@ -101,9 +99,7 @@ const SingleItem = ({
         transform: CSS.Transform.toString(transform),
     };
 
-    const boxDragClasses = isDragging
-        ? "z-10 border-primary bg-muted"
-        : "border-border bg-muted/40";
+    const boxDragClasses = isDragging ? "z-10 cgItem--dragging" : "";
 
     const gripDragClasses = isDragging
         ? "opacity-0 group-hover:opacity-100 transition-opacity cursor-grabbing"
@@ -114,27 +110,30 @@ const SingleItem = ({
             style={style}
             {...attributes}
             className={cn(
-                "group my-2 flex cursor-default flex-col gap-y-5 rounded-xl border p-3 transition-colors",
+                "cgItem group my-2 flex cursor-default flex-col gap-y-5 p-3 transition-colors",
                 boxDragClasses
             )}
         >
             <div className="flex flex-wrap items-center justify-between gap-2">
-                {itemName != "" ? (
-                    <p className="font-medium">
-                        #{index + 1} - {itemName}
-                    </p>
-                ) : (
-                    <p className="font-medium">#{index + 1} - Empty name</p>
-                )}
+                <p className="cgItem__title">
+                    <span className="cgItem__ord">{index + 1}</span>
+                    {itemName !== "" ? (
+                        <span className="cgItem__name">{itemName}</span>
+                    ) : (
+                        <span className="cgItem__name cgItem__name--empty">
+                            Untitled item
+                        </span>
+                    )}
+                </p>
 
-                <div className="flex gap-3">
+                <div className="cgItem__tools">
                     {/* Drag and Drop Button */}
                     <div
-                        className={`${gripDragClasses} flex justify-center items-center`}
+                        className={`${gripDragClasses} cgItem__grip`}
                         ref={setNodeRef}
                         {...listeners}
                     >
-                        <GripVertical className="text-muted-foreground transition-colors hover:text-primary" />
+                        <GripVertical className="h-4 w-4" />
                     </div>
 
                     {/* Up Button. Ghost, not filled: reordering is
@@ -202,14 +201,18 @@ const SingleItem = ({
                     />
                 </div>
 
-                <div className="col-span-2 flex min-w-0 flex-col gap-2 @xl:col-span-3">
-                    <Label>{_t("form.steps.lineItems.total")}</Label>
-                    <Input
-                        value={`${total} ${currency}`}
-                        readOnly
-                        placeholder="Item total"
-                        className="w-full border-none bg-transparent px-0 text-lg font-medium"
-                    />
+                {/* a readout, so it is text. It was a readonly <input>,
+                    which offers a caret and a focus ring for a value that
+                    can never be edited. */}
+                <div className="col-span-2 min-w-0 @xl:col-span-3">
+                    <p className="cgItem__total">
+                        <span className="cgItem__totalLabel">
+                            {_t("form.steps.lineItems.total")}
+                        </span>
+                        <span className="cgItem__totalValue">
+                            {total} {currency}
+                        </span>
+                    </p>
                 </div>
             </div>
             <FormTextarea

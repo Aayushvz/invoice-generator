@@ -12,7 +12,20 @@
   pond.css: a route scoped world owns its own micro-interactions.
 */
 
-.cgShell {
+/*
+  The token declarations are shared with .cgPortal, the class on every
+  Radix portal root. Custom properties inherit down the DOM, and a portal
+  renders on <body>, outside .cgShell: without this the tokens simply did
+  not exist inside a popover, so rules that plainly said
+  var(--cg-control-radius) computed to 0 and menus drew with no
+  background. Sharing one declaration rather than copying it into a
+  second block is what stops the two drifting.
+
+  The layout below is split into its own .cgShell rule, because a portal
+  must not be a 100dvh flex column.
+*/
+.cgShell,
+.cgPortal {
   --cg-radius: 10px;
   --cg-form-w: 380px;
   --cg-side-w: 300px;
@@ -111,7 +124,10 @@
      the next/font variable, see lib/fonts.ts. */
   --font-primary: var(--font-general), "General Sans", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", monospace;
+}
 
+/* the shell's own layout, which a portal must not inherit */
+.cgShell {
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -138,7 +154,8 @@
   justification for a route having its own theme at all.
 */
 .cgShell[data-cg-theme="light"],
-html:not(.dark) .cgShell {
+html:not(.dark) .cgShell,
+html:not(.dark) .cgPortal {
   /* the toolbar toggle is the only thing that moves this, so it has to move
      the native chrome with it: without a scheme here the inputs, scrollbars
      and autofill inside the panels follow the OS instead of the toggle. */
@@ -162,7 +179,8 @@ html:not(.dark) .cgShell {
 }
 
 .cgShell[data-cg-theme="dark"],
-html.dark .cgShell {
+html.dark .cgShell,
+html.dark .cgPortal {
   color-scheme: only dark;
   --cg-bg: #121212;
   --cg-panel: #1a1a1a;
@@ -2839,4 +2857,128 @@ html.dark .cgShell {
 
 @media (prefers-reduced-motion: reduce) {
   .cgWizard__segBtn::before { transition: none; }
+}
+
+/* ---------- line item card ----------
+
+   The card was a bold "#1 - Empty name" heading, a grip and two chevrons
+   crowded beside it, and a Total rendered as a label above a borderless
+   readonly input at text-lg - a number styled like a page heading inside
+   a form field that could not be typed in.
+
+   The ordinal is a quiet mono chip, the name carries the weight, and the
+   total is one row: what it is on the left, what it comes to on the
+   right.
+*/
+
+.cgItem {
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-radius);
+  background: var(--cg-panel);
+}
+
+.cgItem--dragging {
+  border-color: var(--cg-accent);
+}
+
+.cgItem__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--cg-panel-title);
+  font-weight: var(--cg-control-label-weight);
+}
+
+/* the ordinal is an index, not a name: mono so the numbers line up down
+   a list, and muted so it never competes with what the item is called */
+.cgItem__ord {
+  flex: 0 0 auto;
+  color: var(--cg-fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--cg-panel-hint);
+  font-variant-numeric: tabular-nums;
+}
+
+.cgItem__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cgItem__name--empty {
+  color: var(--cg-fg-2);
+  font-weight: 400;
+}
+
+.cgItem__tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cgItem__grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cg-control-h);
+  height: var(--cg-control-h);
+  border-radius: var(--cg-control-radius);
+  color: var(--cg-fg-2);
+  transition: color var(--dur-hover) var(--ease-quint),
+    background var(--dur-hover) var(--ease-quint);
+}
+
+.cgItem__grip:hover {
+  background: var(--cg-line-2);
+  color: var(--cg-fg);
+}
+
+/* one row, baseline aligned: the label is the question, the number is
+   the answer, and neither needs to be a heading */
+.cgItem__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  height: var(--cg-field-h);
+  padding: 0 2px;
+  border-top: 1px solid var(--cg-line-2);
+}
+
+.cgItem__totalLabel {
+  color: var(--cg-fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--cg-panel-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cgItem__totalValue {
+  color: var(--cg-fg);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- portalled surfaces ----------
+
+   Radix renders popovers, select menus, dialogs and tooltips into a
+   portal on <body>, outside .cgShell. Custom properties inherit down the
+   DOM, so every var(--cg-*) inside one of those resolved to nothing: the
+   calendar's day cells computed border-radius:0 from a rule that plainly
+   said var(--cg-control-radius), and the menus had no background at all.
+   The one matching rule was correct and the token behind it did not
+   exist.
+
+   .cgPortal carries the tokens onto those roots. The theme blocks above
+   list it beside .cgShell, so both surfaces get the same values from the
+   same declaration and there is no second copy to drift. The tokens
+   still never land on :root, which is the containment rule the tool's
+   theme depends on.
+*/
+.cgPortal {
+  font-family: var(--font-primary);
+  color: var(--cg-fg);
 }

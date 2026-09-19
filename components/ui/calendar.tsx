@@ -25,35 +25,40 @@ function Calendar({
     return (
         <DayPicker
             showOutsideDays={showOutsideDays}
+            /* the popover around this already draws the surface, so the
+               calendar only owns its own padding */
             className={cn("p-3", className)}
             classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
                 month: "space-y-4",
-                caption: "flex justify-center pt-1 relative items-center",
-                caption_label: "text-sm font-medium",
-                caption_dropdowns: "flex justify-center gap-1",
-                nav: "space-x-1 flex items-center",
-                nav_button: cn(
-                    buttonVariants({ variant: "outline" }),
-                    "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-                ),
-                nav_button_previous: "absolute start-1",
-                nav_button_next: "absolute end-1",
+                /* the header is a row, not a centred caption with two
+                   absolutely positioned arrows sitting on top of it: the
+                   month and year dropdowns are wide enough that centring
+                   them pushed the arrows onto the same pixels. */
+                caption: "flex items-center justify-between gap-2 pb-1",
+                caption_label: "text-[13px] font-medium tabular-nums",
+                caption_dropdowns: "flex items-center gap-1.5",
+                nav: "flex items-center gap-1",
+                nav_button:
+                    "inline-flex h-7 w-7 items-center justify-center rounded-[var(--cg-control-radius)] text-[var(--cg-fg-2)] transition-colors hover:bg-[var(--cg-line-2)] hover:text-[var(--cg-fg)] disabled:opacity-40",
+                nav_button_previous: "",
+                nav_button_next: "",
                 table: "w-full border-collapse space-y-1",
                 head_row: "flex",
-                head_cell:
-                    "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                head_cell: "cgCal__weekday w-9",
                 row: "flex w-full mt-2",
                 cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                day: cn(
-                    buttonVariants({ variant: "ghost" }),
-                    "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-                ),
-                day_selected:
-                    "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                day_today: "bg-accent text-accent-foreground",
-                day_outside: "text-muted-foreground opacity-50",
-                day_disabled: "text-muted-foreground opacity-50",
+                /* .cgCal__day carries the shape, the hover and the
+                   aria-selected accent already, so the day needs a size and
+                   nothing else. Today is a hairline ring rather than a
+                   filled wash, so it cannot be mistaken for the selected
+                   day at a glance. */
+                day: "cgCal__day h-9 w-9",
+                day_selected: "",
+                day_today:
+                    "border-[var(--cg-line)] font-medium text-[var(--cg-fg)]",
+                day_outside: "text-[var(--cg-fg-2)] opacity-50",
+                day_disabled: "text-[var(--cg-fg-2)] opacity-40",
                 day_range_middle:
                     "aria-selected:bg-accent aria-selected:text-accent-foreground",
                 day_hidden: "invisible",
@@ -87,7 +92,7 @@ function Calendar({
                                 handleChange(value);
                             }}
                         >
-                            <SelectTrigger className="pe-1.5 focus:ring-0">
+                            <SelectTrigger className="h-8 gap-1 border-[var(--cg-line)] bg-transparent px-2 text-[13px] focus:ring-0">
                                 <SelectValue>
                                     {selected?.props?.children}
                                 </SelectValue>

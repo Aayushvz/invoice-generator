@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 // RHF
 import { useFormContext, useWatch } from "react-hook-form";
+import FormFooter from "@/app/components/layout/FormFooter";
 
 // Components
 import {
@@ -55,8 +56,21 @@ const InvoiceForm = () => {
         // of this column rather than the viewport. Without it, a `sm:` class
         // fires on a 1440px desktop even though the form itself is a ~420px
         // rail, which is how a 12-column line-item grid ends up in 420px.
-        <div className="@container min-w-0 shell:flex shell:min-h-0 shell:flex-col shell:border-e shell:border-border shell:bg-card">
-            <div className="mx-auto max-w-2xl shell:min-h-0 shell:overflow-y-auto shell:p-5 xl:mx-0">
+        /* cgForm makes this a flex column at the full height of its
+           track, which is what lets .cgFoot hold itself to the bottom with
+           margin-top:auto when the wizard step is short. The
+           shell:border-e / shell:bg-card that used to draw this panel are
+           gone: .cgCol--form already carries both, and two sources for one
+           border is how they drift apart. */
+        <div className="cgForm @container min-w-0">
+            {/* flush to the top of the column at --cg-bar-h, the same
+                height as the toolbar and the DOCUMENT panel's header, so
+                all three labels sit on one line across the app */}
+            <div className="cgForm__bar">
+                <p className="cgForm__eyebrow">Invoice Details</p>
+            </div>
+
+            <div className="mx-auto w-full min-h-0 max-w-2xl flex-1 overflow-y-auto overscroll-contain p-4 shell:p-5 xl:mx-0">
                 {/*
                   * A meta row, not a heading.
                   *
@@ -131,6 +145,8 @@ const InvoiceForm = () => {
                     <InvoiceSummary />
                 </WizardStep>
             </div>
+
+            <FormFooter />
         </div>
     );
 };

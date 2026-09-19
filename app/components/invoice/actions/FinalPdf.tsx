@@ -37,7 +37,7 @@ export default function FinalPdf() {
     return (
         <>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <Subheading>{_t("actions.finalPdf")}:</Subheading>
+                <Subheading>{_t("actions.finalPdf")}</Subheading>
                 <BaseButton variant="ghost" size="sm" onClick={removeFinalPdf}>
                     <MoveLeft className="h-4 w-4" />
                     {_t("actions.backToLivePreview")}

@@ -42,7 +42,7 @@ const BillFromSection = () => {
 
     return (
         <section className="flex flex-col gap-3">
-            <Subheading>{_t("form.steps.fromAndTo.billFrom")}:</Subheading>
+            <Subheading>{_t("form.steps.fromAndTo.billFrom")}</Subheading>
 
             {/*
              * Your own details are the ones retyped on every invoice, not just

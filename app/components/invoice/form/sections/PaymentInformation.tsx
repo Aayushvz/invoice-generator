@@ -10,7 +10,7 @@ const PaymentInformation = () => {
     const { _t } = useTranslationContext();
     return (
         <section>
-            <Subheading>{_t("form.steps.paymentInfo.heading")}:</Subheading>
+            <Subheading>{_t("form.steps.paymentInfo.heading")}</Subheading>
             <div className="mt-5 grid grid-cols-1 gap-5 @xl:grid-cols-2">
                 <FormInput
                     name="details.paymentInformation.bankName"

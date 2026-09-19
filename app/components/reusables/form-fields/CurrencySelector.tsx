@@ -57,10 +57,13 @@ const CurrencySelector = ({
                 name={name}
                 render={({ field }) => (
                     <FormItem>
-                        <div className={fieldRow}>
-                            <FormLabel className={fieldLabel}>
-                                {label}:
-                            </FormLabel>
+                        {/* stacked like every other field rather than the
+                            label/control two-track row: in a 360px panel that
+                            row left the select a short stub beside a wide
+                            label, and it was the only field in the column
+                            laid out that way. */}
+                        <div className="cgField">
+                            <label className="cgField__label">{label}</label>
                             <div className={fieldControl}>
                                 <Select
                                     {...field}

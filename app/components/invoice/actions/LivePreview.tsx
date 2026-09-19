@@ -119,7 +119,7 @@ function LivePreview({ data, fit = true }: LivePreviewProps) {
              * where the preview shares a plain background with the form.
              */}
             <div className="shell:hidden">
-                <Subheading>{_t("actions.livePreview")}:</Subheading>
+                <Subheading>{_t("actions.livePreview")}</Subheading>
             </div>
 
             {/*

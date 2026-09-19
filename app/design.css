@@ -515,6 +515,17 @@ html.dark .cgShell {
 .cgShell *:focus-visible {
   outline: 2px solid var(--cg-accent);
   outline-offset: 2px;
+  /* globals.css puts a Tailwind ring on every :focus-visible in the app.
+     Inside the shell this rule is more specific, so its outline won its
+     half of the fight, but the ring is a box-shadow and kept drawing
+     underneath: a focused select wore an accent outline AND a two-pixel
+     offset ring, which is what made it look like the only control in the
+     panel that had been shouted at.
+
+     Zeroing the two ring variables rather than setting box-shadow:none
+     leaves an element free to keep a shadow of its own. */
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
 }
 
 /* ---------- icons ----------

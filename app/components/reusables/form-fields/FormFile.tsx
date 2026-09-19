@@ -68,8 +68,12 @@ const FormFile = ({ name, label, placeholder }: FormFileProps) => {
                 control={control}
                 name={name}
                 render={() => (
-                    <FormItem className="w-full min-w-0">
-                        <Label>{label}:</Label>
+                    <FormItem className="cgField w-full min-w-0">
+                        {/* the same label idiom every other field in this
+                            column uses. A bold sans label here next to mono
+                            uppercase ones on the fields above it read as two
+                            different forms sharing a panel. */}
+                        <label className="cgField__label">{label}</label>
                         {base64Image ? (
                             <img
                                 id="logoImage"
@@ -81,7 +85,7 @@ const FormFile = ({ name, label, placeholder }: FormFileProps) => {
                             <div className="w-full max-w-[10rem]">
                                 <Label
                                     htmlFor={name}
-                                    className="flex h-[7rem] w-full cursor-pointer items-center justify-center rounded-md border border-dashed border-border bg-muted/50 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                                    className="flex h-[7rem] w-full cursor-pointer items-center justify-center rounded-[var(--cg-control-radius)] border border-dashed border-[var(--cg-line)] bg-[var(--cg-field)] text-[var(--cg-fg-2)] transition-colors hover:border-[var(--cg-accent)] hover:text-[var(--cg-fg)]"
                                 >
                                     <>
                                         <div className="flex flex-col items-center gap-1 px-2 text-center">

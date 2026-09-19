@@ -32,7 +32,7 @@ const InvoiceDetails = () => {
 
     return (
         <section className="flex flex-col flex-wrap gap-5">
-            <Subheading>{_t("form.steps.invoiceDetails.heading")}:</Subheading>
+            <Subheading>{_t("form.steps.invoiceDetails.heading")}</Subheading>
 
             <div className="grid grid-cols-1 gap-8">
                 <div className="flex min-w-0 flex-col gap-3">

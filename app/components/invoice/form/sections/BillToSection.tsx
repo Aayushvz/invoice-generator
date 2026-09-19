@@ -43,7 +43,7 @@ const BillToSection = () => {
 
     return (
         <section className="flex flex-col gap-3">
-            <Subheading>{_t("form.steps.fromAndTo.billTo")}:</Subheading>
+            <Subheading>{_t("form.steps.fromAndTo.billTo")}</Subheading>
 
             {/* Save this client, or fill the fields from one saved before. */}
             <PartyPicker kind="receiver" />

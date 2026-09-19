@@ -108,7 +108,7 @@ const Items = () => {
 
     return (
         <section className="flex flex-col gap-2 w-full">
-            <Subheading>{_t("form.steps.lineItems.heading")}:</Subheading>
+            <Subheading>{_t("form.steps.lineItems.heading")}</Subheading>
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}

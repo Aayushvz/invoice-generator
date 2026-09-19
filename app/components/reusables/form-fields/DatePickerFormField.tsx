@@ -53,7 +53,7 @@ const DatePickerFormField = ({ name, label }: DatePickerFormFieldProps) => {
                 name={name}
                 render={({ field }) => (
                     <div className="cgField">
-                        <label className="cgField__label">{label}:</label>
+                        <label className="cgField__label">{label}</label>
                         <Popover
                             open={isPopoverOpen}
                             onOpenChange={setIsPopoverOpen}

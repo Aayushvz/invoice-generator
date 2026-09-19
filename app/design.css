@@ -1,0 +1,2694 @@
+/*
+  Contract generator, route scoped.
+
+  Every selector here is prefixed `cg` and every token is declared on
+  .cgShell rather than :root. That scoping is the whole reason this route
+  can carry a light/dark switch while the rest of the site keeps its
+  single fixed palette: nothing here can reach past the shell, and
+  leaving the route is the way back from any choice made inside it.
+
+  Press feedback lives at the bottom of this file, not in the
+  MICRO-INTERACTION LAYER block of globals.css, matching cricket.css and
+  pond.css: a route scoped world owns its own micro-interactions.
+*/
+
+.cgShell {
+  --cg-radius: 10px;
+  --cg-form-w: 380px;
+  --cg-side-w: 300px;
+  /* still sets .cgBar's own fixed height on desktop; .cgGrid no longer
+     subtracts it (see the flex comment below), so it is not load-bearing
+     for layout, only for the bar's own size */
+  --cg-bar-h: 56px;
+
+  /* ---------- control system ----------
+     One language for every clickable control and text field on the
+     route, so a button sitting next to an input reads as the same
+     family of object rather than two different apps glued together.
+     Defined once, here, so every number below is a single edit away.
+
+     --cg-control-radius: every button, input, trigger and list row on
+     the page shares this one rectangular radius - the 999px pills this
+     route used to render next to 8px-radius inputs are gone. Full
+     round survives only where the shape itself is the meaning: the
+     completion ring (.cgRing is an SVG stroke, nothing to change) and
+     the switch tracks in the Clauses block (--cg-round below) - a pill
+     there genuinely reads as a physical toggle, not a button imitating
+     one.
+
+     --cg-control-h / --cg-field-h: two control heights, not three.
+     36px for every button (Export, Reset, Cancel, Save, Edit content,
+     Revert everything, every icon-only ghost). 42px for every text
+     field and the triggers standing in for one (.cgInput, and anything
+     that reuses it wholesale: Select's closed trigger, DateField's
+     text box). The 6px step between them is deliberate - a heavier,
+     more frequently focused surface reads slightly taller on purpose -
+     not the accidental gap that used to separate Export (36) from
+     Reset (36) from the inputs (42) with no button/field logic behind
+     the split. A third height appearing anywhere in this file later is
+     the bug this comment exists to catch.
+
+     --cg-control-label-size / --cg-control-label-weight: one size and
+     weight for every control's own label - Export, Reset, Cancel,
+     Save, Edit content, Revert to default and the export menu items
+     all read at the same size now, including the icon-only ghosts
+     (they show no text today, but now inherit the value a label added
+     to one later would need, instead of silently falling back to
+     whatever font-size happens to be ambient). Field labels
+     (.cgField__label) and the document's own body/heading type keep
+     their own scale (DESIGN.md section 3) - this pair is only ever
+     about words printed on a clickable control.
+
+     --cg-control-pad-x: the one horizontal padding every pill-shaped
+     text control shares, so Export/Reset/Cancel/Save/Edit content sit
+     at one rhythm instead of each having picked 8/12/14px by hand.
+
+     --cg-round: names the full-round exception itself, so the couple
+     of places still built as a pill for reasons unrelated to this
+     system (the switch tracks, and two deliberately-excluded spots
+     documented in the polish report: the mobile tab bar's selection
+     wash and the footer's circular social links) read as a decision
+     rather than a leftover. */
+  --cg-control-radius: 8px;
+  --cg-control-h: 36px;
+  --cg-field-h: 38px;
+  --cg-control-label-size: 13px;
+  --cg-control-label-weight: 500;
+
+  /* Panel type scale. The two side panels are dense instrument surfaces,
+     not reading columns, and they were running a step large: group names
+     at 14.5, inputs at 15, switch labels at 14, hints at 12. Comfortable
+     in isolation, oversized once six groups, four colour rows and five
+     toggles stack in a 360px column. One step down across the board,
+     declared here so the panels stay in proportion to each other rather
+     than drifting apart again. */
+  --cg-panel-title: 13px;      /* group names, switch labels, skin names */
+  --cg-panel-input: 13.5px;    /* text the user typed */
+  --cg-panel-hint: 11px;       /* secondary lines under a title */
+  --cg-panel-label: 10.5px;    /* the mono uppercase field labels */
+  --cg-control-pad-x: 14px;
+  --cg-round: 999px;
+
+  /* a flex column that is exactly the viewport tall, not a min-height: the
+     shell is a fixed-height dashboard and its chrome rows (.cgBar always,
+     .cgMobileTabs at <= 1099px - see the responsive section) are meant to
+     give up whatever they grow to and let .cgGrid take the rest, rather
+     than the page growing to fit them and scrolling. This used to be done
+     by hand: .cgGrid subtracted a hardcoded --cg-bar-h from 100vh, which
+     only accounted for .cgBar's own height and never the top tab strip
+     that used to appear at <= 1099px (removed in favour of .cgMobileTabs,
+     a bottom bar rather than a second top row), or .cgBar's own growth at
+     that width from the mobile nav clearance padding. Both grew silently
+     and the sum was never re-subtracted, which is what produced 111px of
+     page overflow below that breakpoint. Flex removes the bookkeeping
+     entirely: whatever the chrome rows measure, .cgGrid gets what is
+     left, regardless of which rows exist at the current width. 100dvh
+     over 100vh so mobile browser chrome (the address bar showing/hiding)
+     does not leave a sliver of the page scrollable. */
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--cg-bg);
+  color: var(--cg-fg);
+  font-family: var(--font-primary);
+  transition: background var(--dur-state) var(--ease-quint),
+    color var(--dur-state) var(--ease-quint);
+}
+
+.cgShell[data-cg-theme="light"] {
+  /* the toolbar toggle is the only thing that moves this, so it has to move
+     the native chrome with it: without a scheme here the inputs, scrollbars
+     and autofill inside the panels follow the OS instead of the toggle. */
+  color-scheme: only light;
+  --cg-bg: #f2ede6;
+  --cg-panel: #faf7f1;
+  --cg-fg: #1f1f1f;
+  --cg-fg-2: #6b6459;
+  --cg-line: rgba(31, 31, 31, 0.14);
+  --cg-line-2: rgba(31, 31, 31, 0.07);
+  --cg-field: #ffffff;
+  --cg-accent: #7c3aed;
+  --cg-accent-fg: #ffffff;
+  --cg-paper: #ffffff;
+  --cg-paper-fg: #1f1f1f;
+  --cg-paper-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 18px 44px rgba(0, 0, 0, 0.09);
+  /* the paper column's background texture (see .cgCol--paper); same ink
+     base as --cg-line, at an alpha low enough to read as a surface behind
+     the white sheet rather than a pattern competing with it */
+  --cg-dot: rgba(31, 31, 31, 0.09);
+}
+
+.cgShell[data-cg-theme="dark"] {
+  color-scheme: only dark;
+  --cg-bg: #121212;
+  --cg-panel: #1a1a1a;
+  --cg-fg: #f4f1ea;
+  --cg-fg-2: #9a948a;
+  --cg-line: rgba(244, 241, 234, 0.14);
+  --cg-line-2: rgba(244, 241, 234, 0.07);
+  --cg-field: #212121;
+  /* the brand violet is tuned for readability on cream; on near-black it
+     needs the lighter step to clear 4.5:1 */
+  --cg-accent: #a78bfa;
+  --cg-accent-fg: #17141f;
+  /* the document is paper in both themes. The toggle dresses the chrome
+     around it; the artifact is the thing being printed, and a contract
+     that previews dark and prints white is a preview that lies. A user
+     who wants a dark sheet sets Background and Text in the Colors group,
+     which override these. Mirrored by PAPER_DEFAULT in SidePanel.tsx. */
+  --cg-paper: #ffffff;
+  --cg-paper-fg: #1f1f1f;
+  /* a white sheet on a near-black ground needs the heavier halo to sit on
+     the surface rather than glow off it */
+  --cg-paper-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 22px 52px rgba(0, 0, 0, 0.6);
+  /* same role as light's --cg-dot, flipped to the light ink base (matching
+     --cg-fg's rgb) since the surface behind the sheet is now near-black */
+  --cg-dot: rgba(244, 241, 234, 0.07);
+}
+
+/* ---------- layout ---------- */
+
+.cgGrid {
+  display: grid;
+  grid-template-columns: var(--cg-form-w) 1fr;
+  /* takes whatever height .cgShell's flex column has left after .cgBar and,
+     at <= 1099px, .cgMobileTabs; min-height: 0 is required for a flex
+     item's height to shrink
+     below its content's intrinsic size, otherwise the grid (and the page)
+     grows to fit .cgCol's content instead of clipping it for .cgCol's own
+     overflow-y: auto to scroll internally */
+  flex: 1;
+  min-height: 0;
+  /* collapsing a docked panel (see the panel collapse section further
+     down) only ever changes --cg-form-w/--cg-side-w, so the track count
+     and value types never change between states, which is what makes
+     interpolating this track list possible at all */
+  transition: grid-template-columns var(--dur-panel) var(--ease-quint);
+}
+
+.cgCol {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.cgCol--form {
+  border-right: 1px solid var(--cg-line);
+  background: var(--cg-panel);
+}
+
+/* the site's own dot-grid language (see app/globals.css's --dot /
+   --grid-size, e.g. .dotsInk), reproduced rather than reached for: this
+   route's tokens live on .cgShell, not :root, so it declares its own
+   --cg-dot per theme above instead of depending on globals.css, but
+   matches globals.css's 20.28px cell size so the route does not invent a
+   second dot rhythm. A surface the paper sits on, not a pattern next to
+   it: .cgDoc is opaque (background: var(--cg-paper)), so the dots only
+   ever show in the gutter around it, and stay out of @media print
+   entirely because that block sets this element's background with the
+   full `background` shorthand, which resets background-image to none. */
+.cgCol--paper {
+  padding: clamp(20px, 3vw, 44px);
+  background-color: var(--cg-bg);
+  background-image: radial-gradient(var(--cg-dot) 1.4px, transparent 1.4px);
+  background-size: 20.28px 20.28px;
+}
+
+/* ---------- scrollbars ----------
+   Three scroll containers, all the same treatment. The form, the paper
+   and the side panel are long (seven groups, thirteen clauses) and the
+   bar is the only cue for position and remaining length, so theirs is a
+   thin custom thumb instead of the OS default.
+
+   Every rule here is scoped under .cgShell. Pseudo-elements cannot carry
+   the `cg` prefix themselves, so this scoping is what stops a bare
+   ::-webkit-scrollbar from leaking past this route into every other page
+   that shares this stylesheet chunk. */
+
+.cgShell .cgCol--form,
+.cgShell .cgCol--paper,
+.cgShell .cgSide {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.cgShell .cgCol--form:hover,
+.cgShell .cgCol--paper:hover,
+.cgShell .cgSide:hover {
+  scrollbar-color: var(--cg-line) transparent;
+}
+
+.cgShell .cgCol--form::-webkit-scrollbar,
+.cgShell .cgCol--paper::-webkit-scrollbar,
+.cgShell .cgSide::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cgShell .cgCol--form::-webkit-scrollbar-track,
+.cgShell .cgCol--paper::-webkit-scrollbar-track,
+.cgShell .cgSide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cgShell .cgCol--form::-webkit-scrollbar-button,
+.cgShell .cgCol--paper::-webkit-scrollbar-button,
+.cgShell .cgSide::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.cgShell .cgCol--form::-webkit-scrollbar-thumb,
+.cgShell .cgCol--paper::-webkit-scrollbar-thumb,
+.cgShell .cgSide::-webkit-scrollbar-thumb {
+  background-color: var(--cg-line);
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity var(--dur-hover) var(--ease-quint),
+    background-color var(--dur-hover) var(--ease-quint);
+}
+
+.cgShell .cgCol--form:hover::-webkit-scrollbar-thumb,
+.cgShell .cgCol--paper:hover::-webkit-scrollbar-thumb,
+.cgShell .cgSide:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+.cgShell .cgCol--form::-webkit-scrollbar-thumb:hover,
+.cgShell .cgCol--paper::-webkit-scrollbar-thumb:hover,
+.cgShell .cgSide::-webkit-scrollbar-thumb:hover {
+  background-color: var(--cg-fg-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgShell .cgCol--form::-webkit-scrollbar-thumb,
+  .cgShell .cgCol--paper::-webkit-scrollbar-thumb,
+  .cgShell .cgSide::-webkit-scrollbar-thumb {
+    transition: none;
+  }
+}
+
+/* ---------- toolbar ---------- */
+
+/* position + z-index here are not decorative: .cgSide is a grid item with
+   z-index: 30, and a grid item's z-index is honoured even at
+   position: static, so without its own stacking context .cgBar (a
+   position: static sibling with no z-index) painted behind it, clipping
+   .cgMenu (the Export dropdown, z-index: 20, a descendant of .cgBar)
+   behind the docked panel's header. Giving .cgBar its own positioned
+   stacking context above 30 is what wins that fight, not raising
+   .cgMenu's own z-index, which is already scoped correctly relative to
+   its own stacking context and was never the problem. */
+.cgBar {
+  position: relative;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--cg-bar-h);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--cg-line);
+  background: var(--cg-panel);
+}
+
+.cgBar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cg-fg-2);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color var(--dur-hover) var(--ease-quint);
+}
+
+.cgBar__back:hover {
+  color: var(--cg-fg);
+}
+
+/* replaces the word "Playground": the wordmark sits at a size that reads
+   comfortably next to .cgBar__title, muted with the rest of the control
+   and brought to full strength on the same hover/transition as the arrow
+   beside it. currentColor drives that fade; the mark's own purple square
+   is a fixed fill inside LogoMark and never changes with it. */
+.cgBar__logo {
+  width: 72px;
+  height: auto;
+}
+
+.cgBar__title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cgBar__spacer {
+  flex: 1;
+}
+
+/* the completion readout: a ring and a number, the only progress chrome */
+.cgRing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cg-fg-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cgRing__svg {
+  transform: rotate(-90deg);
+}
+
+.cgRing__track {
+  stroke: var(--cg-line);
+}
+
+.cgRing__fill {
+  stroke: var(--cg-accent);
+  transition: stroke-dashoffset var(--dur-panel) var(--ease-quint);
+}
+
+/* ---------- controls ---------- */
+
+.cgGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cg-control-h);
+  height: var(--cg-control-h);
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  cursor: pointer;
+}
+
+/* the panel toggle: only offered in the gap where the panel exists but
+   is not docked. Hidden by default and un-hidden by the single media
+   query below that names that exact range. */
+.cgBar__sideToggle { display: none; }
+
+/* ghost, not primary: Export stays the page's one filled control. Text
+   stays visible (not an icon-only .cgGhost square) because this sits
+   right next to Export in the toolbar rather than at the foot of a
+   scrolled panel, so it needs to read as "the other button next to
+   Export", not be identifiable by icon alone. */
+.cgBar__reset {
+  display: inline-flex;
+  align-items: center;
+  height: var(--cg-control-h);
+  gap: 6px;
+  padding: 0 var(--cg-control-pad-x);
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg-2);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  cursor: pointer;
+}
+
+/* the one filled control on the page */
+.cgPrimary {
+  display: inline-flex;
+  align-items: center;
+  height: var(--cg-control-h);
+  gap: 8px;
+  padding: 0 var(--cg-control-pad-x);
+  border: 0;
+  border-radius: var(--cg-control-radius);
+  background: var(--cg-accent);
+  color: var(--cg-accent-fg);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  cursor: pointer;
+}
+
+.cgMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 210px;
+  padding: 6px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-radius);
+  background: var(--cg-panel);
+  box-shadow: var(--cg-paper-shadow);
+  z-index: 20;
+}
+
+.cgMenu__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cgMenu__icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--cg-fg-2);
+}
+
+.cgMenu__itemText {
+  flex: 1;
+}
+
+.cgMenu__item:hover {
+  background: var(--cg-line-2);
+}
+
+.cgMenu__hint {
+  display: block;
+  color: var(--cg-fg-2);
+  font-size: 11px;
+  /* .cgMenu__item now carries the shared control-label weight so its
+     own name reads consistently with every other button on the route;
+     this quiet second line is not the control's label, so it resets
+     back to the ordinary body weight rather than inheriting that 500 */
+  font-weight: 400;
+}
+
+/* scoped to the shell: contract.css is a plain stylesheet import, so a
+   bare universal selector here would leak to every page that ever loads
+   this chunk. cricket.css and pond.css keep everything prefixed for the
+   same reason. `@page` below is the one rule that cannot be scoped, and
+   it is safe because Next only loads this stylesheet on /contract. */
+.cgShell *:focus-visible {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- icons ----------
+   Every icon in this route is the shared .cgIcon size unless its context
+   below narrows it; none of the icon components set width/height
+   themselves, so sizing only ever happens here. */
+
+.cgIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.cgBar__back .cgIcon { width: 14px; height: 14px; }
+.cgPrimary .cgIcon,
+.cgAcc__chev .cgIcon { width: 14px; height: 14px; }
+.cgMenu__icon { width: 16px; height: 16px; }
+.cgList__rm .cgIcon,
+.cgList__add .cgIcon,
+.cgBar__reset .cgIcon { width: 14px; height: 14px; }
+.cgSelect__chevron,
+.cgCal__nav .cgIcon { width: 14px; height: 14px; }
+.cgDoc__editedRevert .cgIcon { width: 10px; height: 10px; }
+
+/* ---------- form panel ---------- */
+
+.cgForm {
+  /* no top padding: .cgForm__bar is a header flush to the top of the
+     column, exactly like .cgSide__bar on the other side. Padding here
+     pushed it down 16px, which is what put the two panel headers 6px
+     out of line with each other and off the toolbar's rhythm.
+
+     A flex column at the full height of its track so .cgFoot can be
+     pushed to the bottom with margin-top:auto. sticky alone was not
+     enough: it only pins once there is overflow to scroll, and with the
+     groups collapsed the content is shorter than the column, so the
+     footer simply sat wherever the list ended. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0;
+}
+
+/* the panel's own title, not a caption on it - full --cg-fg contrast and a
+   700 weight (heavier than the 600 DESIGN.md reserves for headings, since
+   this has to read as the anchor for the whole panel, not one heading
+   among several) rather than the faint --cg-fg-2 label this used to share
+   with every other mono caption in the route. Still mono/uppercase/tracked,
+   the same eyebrow idiom, just given enough weight to earn the name. */
+.cgForm__eyebrow {
+  margin: 0 16px 10px;
+  color: var(--cg-fg);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* the panel's header row: its eyebrow plus the collapse control at the
+   header's right edge, per the reference this task is beating. Reused
+   as-is by SidePanel's docked header (see .cgSide__bar) so both panels'
+   titles sit on the same rule rather than two near-duplicate ones.
+
+   position: sticky + an opaque background is what keeps this from
+   scrolling away with the six groups beneath it: .cgCol--form is the
+   scroll container (see .cgCol above), and without this the header would
+   scroll out of view exactly like the footer used to (see .cgFoot below).
+   The border only appears once the header is actually pinned against
+   scrolled content, which is what makes it read as a fixed piece of
+   furniture rather than just the first row of the list. */
+.cgForm__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* matched to .cgSide__bar so both panel headers are the same height,
+     start flush at the top of their column, and put their collapse
+     buttons on one line across the whole app. --cg-bar-h is the
+     toolbar's height, so all three sit on the same rhythm. */
+  height: var(--cg-bar-h);
+  flex: 0 0 auto;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--cg-line);
+  background: var(--cg-panel);
+}
+
+.cgForm__bar .cgForm__eyebrow { margin: 0; }
+
+.cgAcc {
+  border-top: 1px solid var(--cg-line-2);
+}
+
+.cgAcc__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cgAcc__icon {
+  flex: 0 0 auto;
+  color: var(--cg-fg-2);
+}
+
+/* a calm list item, not a small heading: 500 is DESIGN.md's UI-label
+   weight (section 3), a step down from the 600 this used to carry, and
+   the colour now matches .cgAcc__icon's --cg-fg-2 exactly rather than
+   inheriting .cgAcc__head's full-contrast --cg-fg. Icon and name read as
+   one object this way instead of a dark label next to a grey glyph, and
+   the row overall sits quieter than the eyebrow above it (see
+   .cgForm__eyebrow), which is now the one bold thing in the header. The
+   half-step size bump stays, so the row is still legible at the softer
+   weight. .cgAcc__count and .cgAcc__chev keep their own colour/size, so
+   they stay quieter than the name the way they always were. */
+.cgAcc__label {
+  flex: 1;
+  color: var(--cg-fg-2);
+  font-size: var(--cg-panel-title);
+  font-weight: 500;
+}
+
+.cgAcc__count {
+  color: var(--cg-fg-2);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cgAcc__chev {
+  color: var(--cg-fg-2);
+  transition: transform var(--dur-state) var(--ease-quint);
+}
+
+.cgAcc__chev[data-open="true"] { transform: rotate(180deg); }
+
+.cgAcc__body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 16px 20px;
+}
+
+.cgField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 100%;
+}
+
+.cgField[data-half="true"] { flex: 1 1 calc(50% - 6px); }
+
+.cgField__label {
+  color: var(--cg-fg-2);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: var(--cg-panel-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cgField__opt { opacity: 0.6; text-transform: none; letter-spacing: 0; }
+
+.cgInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: var(--cg-field);
+  color: var(--cg-fg);
+  font: inherit;
+  font-size: var(--cg-panel-input);
+  transition: border-color var(--dur-hover) var(--ease-quint);
+}
+
+/* the one field height: every single-line .cgInput (plain text inputs,
+   Select's closed trigger, DateField's text box - anything that is not
+   the multi-line textarea variant below) lands on --cg-field-h through
+   this one rule rather than each control's own padding math happening
+   to agree, so nothing can quietly drift to a third height later. The
+   textarea is excluded because it has to grow with content, not sit at
+   a fixed height. */
+.cgInput:not(.cgInput--area) { height: var(--cg-field-h); }
+
+.cgInput:hover { border-color: var(--cg-fg-2); }
+.cgInput--area { resize: vertical; min-height: 76px; }
+
+.cgList { display: flex; flex-direction: column; gap: 6px; }
+.cgList__row { display: flex; gap: 6px; }
+
+.cgList__rm,
+.cgList__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg-2);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* deliberately the field height, not the control height: this sits
+   flush beside a .cgInput in the same row (see .cgList__row), so it
+   takes --cg-field-h to keep both edges of the row level rather than
+   the shorter button height leaving a visible step on one side */
+.cgList__rm { width: var(--cg-field-h); height: var(--cg-field-h); flex: 0 0 var(--cg-field-h); }
+.cgList__add {
+  height: var(--cg-control-h);
+  gap: 6px;
+  padding: 0 var(--cg-control-pad-x);
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  border-style: dashed;
+}
+
+/* switches: 44px tall so the whole row is the touch target */
+/* relative for the same reason .cgLogo is: it anchors the hidden input
+   below so a focused clause toggle cannot scroll the app. */
+.cgSwitch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  flex: 1 1 100%;
+  cursor: pointer;
+}
+
+/* anchored to .cgSwitch - see .cgLogo__file for what an unanchored
+   visually-hidden input does to a scrolling panel. These sit lower in
+   .cgSide than the logo field ever did. */
+.cgSwitch input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px; height: 1px;
+  opacity: 0;
+}
+
+/* one of the two sanctioned full-round shapes (see --cg-round on
+   .cgShell): a switch genuinely reads as a physical toggle only as a
+   pill, so it stays outside the rectangular control system on purpose */
+.cgSwitch__track {
+  position: relative;
+  flex: 0 0 34px;
+  width: 34px; height: 20px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-round);
+  background: transparent;
+  transition: background var(--dur-state) var(--ease-quint),
+    border-color var(--dur-state) var(--ease-quint);
+}
+
+.cgSwitch__track::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 12px; height: 12px;
+  border-radius: var(--cg-round);
+  background: var(--cg-fg-2);
+  transition: transform var(--dur-state) var(--ease-quint),
+    background var(--dur-state) var(--ease-quint);
+}
+
+/* on stays a thin outline, not a filled pill: Export is the page's one
+   filled control (see .cgPrimary), so five switches all filling
+   with --cg-accent would read as five more calls to action. The knob
+   alone carries the accent, and on/off also differ by knob position
+   (left/right), so the state never depends on colour alone. */
+.cgSwitch input:checked + .cgSwitch__track {
+  border-color: var(--cg-accent);
+}
+
+.cgSwitch input:checked + .cgSwitch__track::after {
+  transform: translateX(14px);
+  background: var(--cg-accent);
+}
+
+.cgSwitch input:focus-visible + .cgSwitch__track {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
+
+.cgSwitch__text { font-size: var(--cg-panel-title); }
+
+.cgSwitch__hint {
+  display: block;
+  color: var(--cg-fg-2);
+  font-size: var(--cg-panel-hint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgAcc__chev,
+  .cgSwitch__track,
+  .cgSwitch__track::after,
+  .cgInput {
+    transition: none;
+  }
+}
+
+/* ---------- custom select ----------
+   Replaces the native <select> everywhere this route offers a fixed list
+   (currency, entity type, the three font pickers in SidePanel) - see
+   Select.tsx for why the native popup cannot be styled at all and the
+   interaction model this borrows.
+
+   .cgSelect__trigger reuses .cgInput wholesale (border, background,
+   radius, font, hover) rather than a second field skin, so the closed
+   control is pixel-identical to every plain text input in both themes;
+   this block only adds the layout .cgInput does not need for itself. The
+   popup is position: fixed (set inline from Select.tsx's own measurement,
+   not here) so FormPanel's accordion overflow:hidden and .cgCol--form's
+   own scrolling can never clip it, and z-index: 50 clears both .cgBar
+   (40) and .cgSide (30) - see the comment on .cgBar above for why those
+   two numbers exist at all. */
+
+.cgSelect {
+  position: relative;
+  width: 100%;
+}
+
+.cgSelect__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  /* .cgInput's own border-color transition, restated alongside transform:
+     a second `transition` declaration here does not merge with .cgInput's,
+     it replaces it for elements carrying both classes, so this has to
+     name everything the control needs in one list */
+  transition: border-color var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgSelect__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cgSelect__chevron {
+  flex: 0 0 auto;
+  color: var(--cg-fg-2);
+  transition: transform var(--dur-hover) var(--ease-quint);
+}
+
+.cgSelect__trigger[aria-expanded="true"] .cgSelect__chevron {
+  transform: rotate(180deg);
+}
+
+.cgSelect__popup {
+  z-index: 50;
+  padding: 4px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-radius);
+  background: var(--cg-panel);
+  box-shadow: var(--cg-paper-shadow);
+  overflow-y: auto;
+}
+
+.cgSelect__option {
+  padding: 8px 10px;
+  border-radius: var(--cg-control-radius);
+  color: var(--cg-fg);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cgSelect__option[data-active="true"] {
+  background: var(--cg-line-2);
+}
+
+.cgSelect__option[aria-selected="true"] {
+  color: var(--cg-accent);
+  font-weight: 500;
+}
+
+/* ---------- custom date field ----------
+   Replaces <input type="date"> for the same reason as .cgSelect above -
+   see DateField.tsx. The text input reuses .cgInput exactly like the
+   select trigger does; .cgDate__toggle reuses .cgGhost (the same 32px
+   circular icon button used everywhere else in this route), which is
+   also what gives it the same :active press feedback for free (see the
+   press-feedback section below - .cgGhost is already in that list). */
+
+.cgDate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.cgDate__input {
+  flex: 1;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.cgDate__toggle {
+  flex: 0 0 auto;
+}
+
+.cgCal {
+  z-index: 50;
+  padding: 12px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-radius);
+  background: var(--cg-panel);
+  box-shadow: var(--cg-paper-shadow);
+}
+
+.cgCal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* used to shrink to 28px to fit the compact popup header; .cgGhost is
+   now the one control height (--cg-control-h) everywhere, and the
+   288px popup has room for two full-height nav buttons beside the
+   month label without crowding it, so the override is gone rather than
+   leaving this the one ghost button that reports a third height */
+
+.cgCal__month {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.cgCal__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.cgCal__weekday {
+  padding: 4px 0;
+  color: var(--cg-fg-2);
+  font-size: 10.5px;
+  font-weight: 500;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cgCal__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cgCal__row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cgCal__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--dur-hover) var(--ease-quint),
+    color var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgCal__day:hover {
+  background: var(--cg-line-2);
+}
+
+.cgCal__day[data-outside="true"] {
+  color: var(--cg-fg-2);
+  opacity: 0.55;
+}
+
+.cgCal__day[data-today="true"] {
+  border-color: var(--cg-line);
+}
+
+/* the chosen day, not the keyboard-focused one - .cgShell *:focus-visible
+   already draws the accent ring a roving-tabindex cell needs when it is
+   reached by keyboard, so this only ever has to mark which date the form
+   actually holds */
+.cgCal__day[aria-selected="true"] {
+  background: var(--cg-accent);
+  color: var(--cg-accent-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgSelect__trigger,
+  .cgSelect__chevron,
+  .cgCal__day {
+    transition: none;
+  }
+}
+
+/* ---------- footer ----------
+   A quiet signature at the foot of the panel, not a call to action: a
+   muted credit line (the wordmark itself now lives in the toolbar, in
+   place of "Playground", so it does not also repeat down here) and the
+   socials, which only pick up colour on hover/focus.
+
+   position: sticky + bottom: 0 is what makes this the panel's own fixed
+   piece of furniture rather than just the last thing in the scrolling
+   list: .cgCol--form is the actual scroll container (see .cgCol above),
+   so without this the credit line and socials would scroll out of view
+   with the six groups exactly like the header used to (see .cgForm__bar).
+   The opaque --cg-panel background is what keeps scrolled content from
+   showing through underneath it once it is pinned, and the top border is
+   what visually separates it from the list the same way .cgForm__bar's
+   bottom border separates the header - the same idiom applied to the
+   other end of the panel. .cgForm's own bottom padding moved to 0 (see
+   above) now that this block owns the panel's bottom edge and its own
+   spacing, rather than leaving 40px of dead space below it that a sticky
+   element can never actually sit inside. */
+.cgFoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  /* auto, not a fixed gap: this is what actually holds it against the
+     bottom of the panel when the content above is short. sticky then
+     keeps it there once the content is long enough to scroll. */
+  margin-top: auto;
+  padding: 14px 16px;
+  border-top: 1px solid var(--cg-line);
+  background: var(--cg-panel);
+}
+
+.cgFoot__by {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 22px, so it reads as a signature beside 11px text rather than an
+   avatar with a caption. The ring is --cg-line rather than a hard edge
+   so it separates the photo from the panel in both themes without
+   drawing a second border weight into a footer that is meant to be
+   quiet. */
+.cgFoot__face {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: var(--cg-round);
+  box-shadow: 0 0 0 1px var(--cg-line);
+  object-fit: cover;
+}
+
+.cgFoot__credit {
+  margin: 0;
+  color: var(--cg-fg-2);
+  font-size: var(--cg-panel-hint);
+}
+
+.cgFoot__socials {
+  display: flex;
+  gap: 2px;
+}
+
+.cgFoot__social {
+  /* the 44px box is a touch target, not a frame to center the glyph in:
+     anchoring the icon to the box's own start edge means that edge lines
+     up with the rest of the panel's left-aligned content directly,
+     rather than needing a hand-tuned negative margin to undo an inset
+     that centering would otherwise put in the way. Kept round
+     (--cg-round) rather than folded into the control system on
+     purpose: these are credit-line social links, not form controls,
+     and never sit next to a rectangular sibling the way a button next
+     to an input does - see the polish report. */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--cg-round);
+  color: var(--cg-fg-2);
+  transition: color var(--dur-hover) var(--ease-quint);
+}
+
+.cgFoot__social:hover,
+.cgFoot__social:focus-visible {
+  color: var(--cg-accent);
+}
+
+.cgFoot__social .cgIcon { width: 18px; height: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cgFoot__social { transition: none; }
+}
+
+/* ---------- press feedback ---------- */
+
+/* .cgSelect__trigger and .cgCal__day are deliberately absent from this
+   list: each already declares its own multi-property transition (the
+   first combines with .cgInput's border-color, the second with its own
+   background/color), and a second `transition` declaration here would
+   replace that whole list rather than add to it, exactly the reason
+   .cgSide__skinRow/.cgSide__exportRow are also only in the :active block
+   below and not here. .cgGhostLabel/.cgEditBar__toggle/.cgConfirm__danger
+   (see the edit mode section below) are the same case: `transform` is
+   folded straight into their own transition declarations instead of
+   listed here. */
+.cgPrimary,
+.cgGhost,
+.cgAcc__head,
+.cgList__add,
+.cgList__rm,
+.cgBar__reset,
+.cgMenu__item,
+.cgSelect__option {
+  transition: transform var(--dur-state) var(--ease-quint);
+}
+
+.cgPrimary:active,
+.cgGhost:active,
+.cgGhostLabel:active,
+.cgEditBar__toggle:active,
+.cgConfirm__danger:active,
+.cgAcc__head:active,
+.cgList__add:active,
+.cgList__rm:active,
+.cgBar__reset:active,
+.cgMenu__item:active,
+.cgSide__skinRow:active,
+.cgSide__exportRow:active,
+.cgSelect__trigger:active,
+.cgSelect__option:active,
+.cgCal__day:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgShell,
+  .cgRing__fill {
+    transition: none;
+  }
+
+  /* feedback survives reduced motion: the press dims instead of scaling */
+  .cgPrimary:active,
+  .cgGhost:active,
+  .cgGhostLabel:active,
+  .cgEditBar__toggle:active,
+  .cgConfirm__danger:active,
+  .cgAcc__head:active,
+  .cgList__add:active,
+  .cgList__rm:active,
+  .cgBar__reset:active,
+  .cgMenu__item:active,
+  .cgSide__skinRow:active,
+  .cgSide__exportRow:active,
+  .cgSelect__trigger:active,
+  .cgSelect__option:active,
+  .cgCal__day:active {
+    transform: none;
+    opacity: 0.7;
+  }
+}
+
+/* ---------- edit mode ----------
+   The "Edit content" control and its Save/Cancel/Revert bar (Task 2),
+   above the document in the paper column. See EditBar.tsx for the
+   behaviour; this is only the paint.
+
+   .cgGhostLabel is a labelled ghost pill - the same shape .cgBar__reset
+   already is, generalised under its own name because it is now used in
+   two places that have nothing to do with the toolbar (Export dropped to
+   a ghost here, and Cancel below).
+
+   Hierarchy: .cgEditBar__toggle is a ghost at every point, pressed or
+   not (no filled state - see the "never a second filled control" note
+   in EditBar.tsx). Inside .cgEditBar__actions, Revert to default
+   (.cgEditBar__danger) is deliberately not a pill at all: a quiet text
+   link, smaller and unbordered, set apart from Cancel/Save by a hairline
+   divider and its own left margin so it cannot be hit reaching for
+   Cancel. Cancel (.cgGhostLabel) and Save (.cgPrimary) are grouped
+   tightly in .cgEditBar__pair, the ordinary secondary-then-primary
+   pairing. .cgEditBar__pair .cgPrimary picks up a transparent 1px
+   border purely so its box height matches Cancel's real one exactly -
+   .cgPrimary is shared with Toolbar's Export button, which never gets a
+   border, so this is scoped to inside the edit bar rather than changing
+   .cgPrimary itself. */
+.cgEditBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 820px;
+  margin: 0 auto 14px;
+}
+
+.cgEditBar__toggle {
+  display: inline-flex;
+  align-items: center;
+  height: var(--cg-control-h);
+  gap: 6px;
+  padding: 0 var(--cg-control-pad-x);
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg-2);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-quint),
+    border-color var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgEditBar__toggle .cgIcon { width: 14px; height: 14px; }
+
+.cgEditBar__toggle:hover { border-color: var(--cg-fg-2); color: var(--cg-fg); }
+
+/* pressed reads as "on" through the icon/label's own colour, never a
+   background fill - a fill would make this a second filled control
+   alongside Save, which the whole point of dropping Export to a ghost
+   was to avoid */
+.cgEditBar__toggle[aria-pressed="true"] {
+  border-color: var(--cg-fg-2);
+  color: var(--cg-fg);
+}
+
+.cgEditBar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cgEditBar__pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cgEditBar__pair .cgPrimary { border: 1px solid transparent; }
+
+/* a hairline, not a gap alone: the destructive action needs a visible
+   seam between it and Cancel/Save, not just extra padding a narrower
+   window could shrink away */
+.cgEditBar__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--cg-line);
+}
+
+/* the quiet one: text only, no pill, no border. This used to share its
+   exact visual language with the per-clause revert
+   (.cgDoc__editedRevert); that one is now a small bordered control of
+   its own (see the edited-mark polish comment further down) because it
+   had to compete for attention with the "edited" state sitting right
+   next to it, which this control never does - it already lives behind
+   its own divider, away from Cancel/Save, with nothing beside it
+   fighting for the same read. Revert-as-quiet-text still stands on its
+   own here for that reason, not because it was missed. */
+.cgEditBar__danger {
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--cg-fg-2);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color var(--dur-hover) var(--ease-quint),
+    text-decoration-color var(--dur-hover) var(--ease-quint);
+}
+
+.cgEditBar__danger:hover {
+  color: var(--cg-fg);
+  text-decoration-color: currentColor;
+}
+
+.cgGhostLabel {
+  display: inline-flex;
+  align-items: center;
+  height: var(--cg-control-h);
+  gap: 6px;
+  padding: 0 var(--cg-control-pad-x);
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg-2);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-quint),
+    color var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgGhostLabel .cgIcon,
+.cgEditBar__pair .cgPrimary .cgIcon { width: 14px; height: 14px; }
+
+.cgGhostLabel:hover { border-color: var(--cg-fg-2); color: var(--cg-fg); }
+
+/* ---- the destructive confirm (Task 2) ----
+   Weight and a heavier border carry "this one is serious", the same
+   text-not-colour rule .cgContrast__verdict's failing reading already
+   follows, rather than a new red that would be the one hardcoded hue on
+   this whole themed route. */
+.cgConfirm__backdrop { z-index: 60; }
+
+.cgConfirm {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 61;
+  width: min(360px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-radius);
+  background: var(--cg-panel);
+  box-shadow: var(--cg-paper-shadow);
+}
+
+.cgConfirm__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cgConfirm__body {
+  margin: 0 0 18px;
+  color: var(--cg-fg-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cgConfirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cgConfirm__danger {
+  height: var(--cg-control-h);
+  padding: 0 var(--cg-control-pad-x);
+  border: 1px solid var(--cg-fg);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  /* Two signals on purpose, and this is the only control on the route
+     that gets a second one. The full-contrast border (var(--cg-fg), not
+     the muted --cg-line every other outline control uses) separates it
+     from its own Cancel sibling 8px away; the heavier label is what
+     makes it read as consequential rather than as just another button
+     in a row.
+
+     Everywhere else, one signal is the rule and a per-control
+     font-weight would be exactly the drift the control system exists to
+     stop. Here the action is irreversible and destroys hand-typed
+     prose, so being unmistakable outranks being uniform. If a third
+     control ever wants its own weight, that is drift and this comment
+     is not a precedent for it. */
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgConfirm__danger:hover { background: var(--cg-line-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cgEditBar__toggle,
+  .cgGhostLabel,
+  .cgEditBar__danger,
+  .cgConfirm__danger,
+  .cgDoc__editedRevert {
+    transition: none;
+  }
+}
+
+/* ---------- the paper ---------- */
+
+/* --cg-doc-bg/--cg-doc-fg: the document's own colour axis (Task 2 in
+   doc-style.md), independent of --cg-paper/--cg-paper-fg which the
+   light/dark theme still sets for the skins that do not override them.
+   Unset (the common case), these fall through to the theme exactly as
+   before; set, they come in as an inline custom property on .cgDoc
+   itself (see DocPaper.tsx's docStyleVars), which beats this selector
+   regardless of specificity, so an explicit choice always wins over
+   both the skin and the theme without needing !important anywhere. */
+.cgDoc {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 64px);
+  border-radius: 2px;
+  background: var(--cg-doc-bg, var(--cg-paper));
+  color: var(--cg-doc-fg, var(--cg-paper-fg));
+  box-shadow: var(--cg-paper-shadow);
+  font-family: var(--cg-doc-body, var(--font-primary));
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+/* the document sets its own selection colours instead of inheriting the
+   UA's. color-scheme is "only dark" on the dark shell, which is right for
+   the chrome, but the sheet inside it stays paper-white, so a UA dark
+   highlight would land light-on-white and swallow the text being
+   selected. Derived from the document's own colours so a user-picked
+   Background/Text pair carries through. */
+.cgShell .cgDoc::selection,
+.cgShell .cgDoc *::selection {
+  background: color-mix(in srgb, var(--cg-doc-accent, var(--cg-accent)) 28%, transparent);
+  color: var(--cg-doc-fg, var(--cg-paper-fg));
+}
+
+/* above the title, never dominating the page: capped well under the
+   title's own width and height so a wide or tall source logo (already
+   downscaled by logo.ts before it ever gets here) still reads as a
+   mark, not a banner. */
+.cgDoc__logo {
+  display: block;
+  max-width: 160px;
+  max-height: 64px;
+  width: auto;
+  height: auto;
+  margin: 0 0 20px;
+  object-fit: contain;
+}
+
+.cgDoc__title {
+  margin: 0 0 28px;
+  font-family: var(--cg-doc-display, var(--font-primary));
+  font-size: clamp(40px, 6vw, 66px);
+  font-weight: var(--cg-doc-display-weight, 600);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+  /* explicit heading colour (Task 2) or the ordinary inherited body
+     colour, same fallback shape as --cg-doc-bg/--cg-doc-fg above */
+  color: var(--cg-doc-heading-color, inherit);
+}
+
+.cgDoc__meta {
+  width: 100%;
+  margin: 0 0 40px;
+  border-top: 1px solid var(--cg-line);
+  border-bottom: 1px solid var(--cg-line);
+  border-collapse: collapse;
+}
+
+.cgDoc__meta th,
+.cgDoc__kv th {
+  width: 36%;
+  padding: 7px 0;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  opacity: 0.6;
+}
+
+.cgDoc__meta td,
+.cgDoc__kv td { padding: 7px 0; }
+
+.cgDoc__clause { margin: 0 0 34px; }
+
+.cgDoc__numRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.cgDoc__num {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 11px;
+  opacity: 0.5;
+  /* the one accent touch in the document itself (Task 2); unset, this
+     is currentColor, i.e. exactly the inherited body colour it always
+     used to render at, so a skin that never heard of --cg-doc-accent
+     looks identical to before */
+  color: var(--cg-doc-accent, currentColor);
+}
+
+/* ---- edited mark ----
+   Two objects, not one: this used to pack the word "edited" and the
+   Revert control into a single bordered pill jammed against the clause
+   number, which read as debug output ("01. (edited Revert)") rather
+   than a considered piece of the page.
+
+   .cgDoc__edited is now the state alone - a small dot plus the word
+   "Edited", no border, no pill, nothing to click. Quiet on purpose:
+   --cg-fg-2 is the same "muted, secondary information" colour the meta
+   table's own labels and the placeholder chip already use, not a new
+   accent, so it reads in both themes for free and never competes with
+   the accent touch on .cgDoc__num above. The dot is decorative (colour
+   is never the only signal - the word "Edited" is what actually says
+   so, the same rule .cgContrast__verdict already follows for its own
+   pass/fail readout), so it carries no accessible text of its own.
+
+   .cgDoc__editedRevert is the action, and now looks like one: a small
+   bordered control with the same hairline --cg-line border and
+   --cg-control-radius every other button on the route uses, just
+   scaled down to sit inside a line of document text instead of the
+   toolbar, plus the same RotateCcwIcon Reset already uses so "revert"
+   is recognisable before the word is even read. Text still carries the
+   meaning (the visible label "Revert" and its own fuller aria-label),
+   never colour alone. */
+.cgDoc__edited {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cg-fg-2);
+  font-family: var(--font-primary);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.cgDoc__editedDot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--cg-round);
+  background: currentColor;
+}
+
+.cgDoc__editedRevert {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: none;
+  color: var(--cg-fg-2);
+  font: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-quint),
+    border-color var(--dur-hover) var(--ease-quint);
+}
+
+.cgDoc__editedRevert:hover {
+  color: var(--cg-fg);
+  border-color: var(--cg-fg-2);
+}
+
+/* --cg-doc-h completes a pairing the skins already half-have:
+   --cg-doc-h-weight exists for the heading's weight but there was no
+   sibling token for its font family, so title and heading always
+   shared --cg-doc-display. Adding --cg-doc-h here is filling in that
+   existing family, not a parallel mechanism: unset, it falls straight
+   through to --cg-doc-display and every skin renders exactly as
+   before; set (an explicit heading-font pick, see SidePanel's
+   TYPOGRAPHY block), it lets headings diverge from the title without
+   the title losing its own --cg-doc-display control. */
+.cgDoc__h {
+  margin: 2px 0 14px;
+  font-family: var(--cg-doc-h, var(--cg-doc-display, var(--font-primary)));
+  font-size: 21px;
+  font-weight: var(--cg-doc-h-weight, 600);
+  letter-spacing: -0.02em;
+  color: var(--cg-doc-heading-color, inherit);
+}
+
+.cgDoc__sub {
+  margin: 18px 0 7px;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.cgDoc__p { margin: 0 0 11px; max-width: 72ch; }
+.cgDoc__ul { margin: 0 0 11px; padding-left: 18px; }
+.cgDoc__ul li { margin: 0 0 5px; }
+
+/* unfilled values read as muted, so the document is whole from the first
+   second without ever looking like it states a term it does not */
+.cgDoc__ph {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--cg-line-2);
+  color: var(--cg-fg-2);
+  opacity: 0.75;
+}
+
+/* ---- editing in place (Task 2) ----
+   A dashed outline rather than a solid border or a background fill: the
+   block is still the exact same .cgDoc__p/.cgDoc__sub/<li> the read-only
+   view uses (see DocPaper's EditableBlock), so a solid fill would read
+   as new content, not an affordance on existing content. Padding/margin
+   compensate for the outline so nothing shifts against its read-only
+   neighbours (a bare list item, a locked table two blocks down). Focus
+   swaps the dashed line for a solid one in the accent colour, the same
+   "this one is live" language a text input's own focus ring already
+   uses elsewhere on this route. */
+.cgDoc__editable {
+  margin-left: -8px;
+  margin-right: -8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  outline: 1px dashed var(--cg-line);
+  outline-offset: 2px;
+  cursor: text;
+  transition: outline-color var(--dur-hover) var(--ease-quint);
+}
+
+.cgDoc__editable:hover { outline-color: var(--cg-fg-2); }
+
+.cgDoc__editable:focus-visible,
+.cgDoc__editable:focus {
+  outline: 1.5px solid var(--cg-doc-accent, var(--cg-fg));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgDoc__editable { transition: none; }
+}
+
+/* ---- locked blocks while editing (Task 2) ----
+   table/ledger/signature never gain an outline or a cursor change of
+   their own - only this small label is added, and only while editing,
+   so the read-only view (editMode off) is untouched pixel for pixel. */
+.cgDoc__locked { position: relative; }
+
+.cgDoc__lockBadge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 8px;
+  color: var(--cg-fg-2);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cgDoc__lockBadge .cgIcon { width: 12px; height: 12px; }
+
+.cgDoc__kv,
+.cgDoc__ledger { width: 100%; margin: 0 0 12px; border-collapse: collapse; }
+
+.cgDoc__ledger th {
+  padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--cg-line);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  opacity: 0.6;
+}
+
+.cgDoc__ledger td {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--cg-line-2);
+  vertical-align: top;
+}
+
+.cgDoc__sign {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.cgDoc__signWho {
+  margin: 0 0 30px;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.cgDoc__signLine {
+  margin: 0 0 22px;
+  padding-top: 6px;
+  border-top: 1px solid var(--cg-line);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.cgDoc__disclaimer {
+  margin: 34px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--cg-line);
+  font-size: 11.5px;
+  opacity: 0.55;
+}
+
+/* ---------- skins ----------
+   Independent of the light/dark theme: the theme paints the chrome, the
+   skin art-directs the paper inside it. */
+
+.cgShell[data-cg-skin="studio"] .cgDoc {
+  --cg-doc-display: var(--font-primary);
+  --cg-doc-display-weight: 600;
+}
+
+.cgShell[data-cg-skin="editorial"] .cgDoc {
+  --cg-doc-display: var(--font-serif), Georgia, serif;
+  --cg-doc-display-weight: 400;
+  --cg-doc-h-weight: 400;
+  line-height: 1.7;
+}
+
+.cgShell[data-cg-skin="editorial"] .cgDoc__title { letter-spacing: -0.02em; }
+
+.cgShell[data-cg-skin="plain"] .cgDoc {
+  --cg-doc-display: var(--font-primary);
+  --cg-doc-display-weight: 500;
+  --cg-doc-h-weight: 500;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.cgShell[data-cg-skin="plain"] .cgDoc__title { font-size: clamp(30px, 4vw, 42px); }
+
+/* ---------- side panel ----------
+   The fourth column. Below 1400px it is not part of the grid at all: it
+   is taken out of flow (position: fixed) and presented as an overlay
+   that data-cg-side="open" slides in, closed by default so it never
+   covers the form or the paper uninvited. At 1400 and up .cgGrid grows a
+   fourth track (see the layout media query further down) and this same
+   element becomes that track.
+
+   The overlay-only declarations (fixed positioning, the off-screen
+   transform, the backdrop) live inside their own `@media (max-width:
+   1399px)` block below rather than on the bare .cgSide/.cgSide__backdrop
+   selectors, and the docked block re-declares position/width rather than
+   trying to override them back. Two same-specificity `.cgSide` rules
+   fighting over transform (one always-on, one inside the >=1400 media
+   query) is exactly what shipped a regression once already: the docked
+   rule's `transform: none` lost the cascade to the overlay's
+   `translateX(100%)`, leaving the docked panel translated 320px past the
+   right edge of the page and the whole document 320px wider than the
+   viewport. Scoping the overlay rules to widths where the panel is
+   actually an overlay means there is nothing left at docked widths for
+   the docked block to out-cascade. */
+
+.cgSide {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 24px;
+  border-left: 1px solid var(--cg-line);
+  background: var(--cg-panel);
+  /* width only ever changes once docked (position: static, see the 1400
+     media query), where it is what the panel's own collapse rail
+     animates; transform is what the overlay case (below) animates
+     instead, so only one of the two is ever doing anything at a given
+     width */
+  transition: transform var(--dur-panel) var(--ease-quint),
+    width var(--dur-panel) var(--ease-quint);
+}
+
+/* overlay only: everywhere below the 1400px docking threshold, .cgSide is
+   taken out of flow and slides in from the right; .cgSide__backdrop only
+   ever mounts in this same range (SidePanel.tsx renders it only when
+   `!docked && open`), but its positioning is scoped here too so the CSS
+   does not depend on that JS guard to stay correct. */
+@media (max-width: 1399px) {
+  .cgSide {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    width: min(320px, 88vw);
+    box-shadow: var(--cg-paper-shadow);
+    transform: translateX(100%);
+  }
+
+  .cgShell[data-cg-side="open"] .cgSide {
+    transform: translateX(0);
+  }
+
+  .cgSide__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    border: 0;
+    background: rgba(0, 0, 0, 0.32);
+    cursor: default;
+  }
+}
+
+.cgSide__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--cg-bar-h);
+  flex: 0 0 auto;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--cg-line);
+}
+
+.cgSide__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* the docked header (>=1400px): reuses .cgForm__eyebrow for its "Document"
+   label rather than a second near-identical rule, so the two panels'
+   header rows share one source of truth for size and tracking. Only
+   rendered when docked; the overlay keeps .cgSide__header above instead. */
+.cgSide__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: var(--cg-bar-h);
+  flex: 0 0 auto;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--cg-line);
+}
+
+/* The panel collapse toggles carry no outline. They sit inside a header
+   that is already bounded by its own border-bottom and the column edge,
+   so a box around the icon just draws a second frame inside a frame.
+   Scoped to the two headers and the collapsed rails rather than put on
+   .cgGhost itself: the toolbar's theme toggle sits on open background
+   with nothing else defining it, and there the outline is what makes it
+   read as a control at all. */
+.cgForm__bar .cgGhost,
+.cgSide__bar .cgGhost,
+.cgPanelRail .cgGhost {
+  border-color: transparent;
+}
+
+/* hover and focus still have to say "this is a button", so the shape
+   comes back on approach rather than never existing */
+.cgForm__bar .cgGhost:hover,
+.cgSide__bar .cgGhost:hover,
+.cgPanelRail .cgGhost:hover {
+  border-color: var(--cg-line);
+  background: var(--cg-line-2);
+}
+
+.cgSide__bar .cgForm__eyebrow { margin: 0; }
+
+.cgSide__block {
+  flex: 0 0 auto;
+  padding: 18px 16px;
+  border-top: 1px solid var(--cg-line-2);
+}
+
+.cgSide__eyebrow {
+  margin: 0 0 12px;
+  color: var(--cg-fg-2);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* ---- skin radiogroup: three unfilled rows, not a segmented control ---- */
+
+.cgSide__radiogroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cgSide__skinRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-quint),
+    background var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgSide__skinRow[data-selected="true"] {
+  border-color: var(--cg-line);
+  background: var(--cg-line-2);
+}
+
+.cgSide__skinName {
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+}
+
+.cgSide__skinHint {
+  color: var(--cg-fg-2);
+  font-size: var(--cg-panel-hint);
+}
+
+/* ---- export rows: the panel's explanatory second surface, never a
+   replacement for the toolbar's Export menu ---- */
+
+.cgSide__exportList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cgSide__exportRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-hover) var(--ease-quint),
+    transform var(--dur-state) var(--ease-quint);
+}
+
+.cgSide__exportRow:hover { background: var(--cg-line-2); }
+
+.cgSide__exportIcon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--cg-fg-2);
+}
+
+.cgSide__exportText {
+  flex: 1;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+}
+
+.cgSide__exportHint {
+  display: block;
+  color: var(--cg-fg-2);
+  font-size: 12px;
+  /* resets the weight .cgSide__exportText now sets for its own label,
+     the same reason .cgMenu__hint resets it above */
+  font-weight: 400;
+}
+
+.cgSide__close .cgIcon,
+.cgSide__exportIcon.cgIcon { width: 16px; height: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cgGrid,
+  .cgSide,
+  .cgSide__skinRow,
+  .cgSide__exportRow {
+    transition: none;
+  }
+}
+
+/* ---- colours: a swatch plus a readable, typeable hex field, never a
+   swatch alone. All four (accent/heading/background/text) share this
+   one row layout. ---- */
+
+.cgColorField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cgColorField__swatch {
+  flex: 0 0 auto;
+  width: var(--cg-control-h);
+  height: var(--cg-control-h);
+  padding: 0;
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  cursor: pointer;
+}
+
+/* the browser's own swatch fill sits inside a further wrapper in
+   Chromium/Safari; without reaching past it the input's border-radius
+   above only rounds the control's hit area, not the colour itself,
+   leaving a square patch inside a round frame */
+.cgColorField__swatch::-webkit-color-swatch-wrapper { padding: 0; }
+.cgColorField__swatch::-webkit-color-swatch { border: none; border-radius: 7px; }
+.cgColorField__swatch::-moz-color-swatch { border: none; border-radius: 7px; }
+
+.cgColorField__hex {
+  flex: 1;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 13px;
+  text-transform: lowercase;
+}
+
+.cgColorField__reset {
+  flex: 0 0 auto;
+}
+
+.cgColorField__reset .cgIcon { width: 13px; height: 13px; }
+
+/* ---- contrast readout: small and factual, never a blocker. Colour is
+   never the only signal - the ratio number and the pass/fail word are
+   both always present - and a fail is a muted line, not a red alarm,
+   per the "keep it small and factual rather than alarming" brief. ---- */
+
+.cgContrast {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cg-line-2);
+}
+
+.cgContrast__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.cgContrast__label { color: var(--cg-fg-2); }
+
+.cgContrast__ratio {
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.cgContrast__verdict { font-size: 11px; }
+.cgContrast__verdict[data-pass="true"] { color: var(--cg-fg-2); }
+.cgContrast__verdict[data-pass="false"] { color: var(--cg-fg); font-weight: 500; }
+
+/* ---- typography: three plain selects, reusing .cgField/.cgInput from
+   the form panel rather than a second set of field styles ---- */
+
+.cgSide__block .cgField { margin-bottom: 12px; }
+.cgSide__block .cgField:last-child { margin-bottom: 0; }
+
+/* ---- logo: a visually hidden file input (same technique as
+   .cgSwitch's checkbox above) triggered by a styled label, so the
+   input stays in the tab order and Enter/Space opens the file dialog
+   even though the native control itself is never shown ---- */
+
+/* position: relative is load-bearing, not decoration. See .cgLogo__file. */
+.cgLogo { position: relative; display: flex; flex-direction: column; gap: 10px; }
+
+/* the native file input: never shown, but it must stay focusable because
+   the label activates it.
+
+   The offsets are the fix for a real bug. Absolutely positioned with no
+   offsets AND no positioned ancestor, its containing block was the
+   initial containing block, so it stopped travelling with .cgSide's
+   scroll and kept the static position it would have had in the
+   unscrolled column - around y=1077 on an 860px window, well below the
+   fold. Clicking the label focused it, the browser scrolled an
+   off-screen focused element into view, and the whole shell slid up
+   leaving the page background showing underneath it. Anchoring it to
+   .cgLogo keeps it where the user is actually looking, so focusing it
+   scrolls nothing. */
+.cgLogo__file {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.cgLogo__browse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cg-control-h);
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg-2);
+  font: inherit;
+  font-size: var(--cg-control-label-size);
+  font-weight: var(--cg-control-label-weight);
+  cursor: pointer;
+}
+
+.cgLogo__file:focus-visible + .cgLogo__browse {
+  outline: 2px solid var(--cg-accent);
+  outline-offset: 2px;
+}
+
+.cgLogo__preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--cg-line);
+  border-radius: 8px;
+}
+
+.cgLogo__thumb {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 6px;
+  background: var(--cg-field);
+  object-fit: contain;
+}
+
+.cgLogo__meta {
+  flex: 1;
+  min-width: 0;
+  color: var(--cg-fg-2);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.cgLogo__remove {
+  flex: 0 0 auto;
+  width: var(--cg-control-h);
+  height: var(--cg-control-h);
+  border: 1px solid var(--cg-line);
+  border-radius: var(--cg-control-radius);
+  background: transparent;
+  color: var(--cg-fg-2);
+  cursor: pointer;
+}
+
+.cgLogo__remove .cgIcon { width: 14px; height: 14px; }
+
+/* not a red alert box: a quiet left rule in the existing accent, same
+   restraint the contrast readout uses - the message itself already
+   says what went wrong, colour does not need to shout it too */
+.cgLogo__error {
+  margin: 0;
+  padding: 8px 10px;
+  border-left: 2px solid var(--cg-accent);
+  color: var(--cg-fg-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgColorField__swatch,
+  .cgLogo__browse,
+  .cgLogo__remove {
+    transition: none;
+  }
+}
+
+/* ---------- print ----------
+   The PDF route. Everything but the paper is removed, the paper loses
+   its shadow and its max-width, and each clause is protected from being
+   split across a page break. Text stays vector and selectable, which is
+   the whole reason this is a stylesheet and not a canvas library.
+
+   The browser's own page headers and footers (URL, date, page numbers)
+   cannot be reached from CSS, so the 18mm margin is sized to sit clear
+   of them rather than fighting them. */
+
+@page {
+  size: A4;
+  margin: 18mm;
+}
+
+@media print {
+  .cgBar,
+  .cgCol--form,
+  .cgSide,
+  .cgSide__backdrop,
+  .cgTabs,
+  .cgMobileTabs,
+  /* Task 2/3: the edit bar, its confirm dialog and backdrop, and the
+     edited mark are all screen-only chrome; the document underneath
+     already renders whatever they'd otherwise let a reader change.
+     .cgDoc__editedRevert is listed separately from .cgDoc__edited now
+     that the state and the action are two sibling elements rather than
+     one button nested inside the other (see the edited-mark polish
+     comment above) - hiding the former no longer hides the latter for
+     free. */
+  .cgEditBar,
+  .cgConfirm,
+  .cgConfirm__backdrop,
+  .cgDoc__edited,
+  .cgDoc__editedRevert,
+  .cgDoc__lockBadge {
+    display: none !important;
+  }
+
+  /* .cgShell is a flex column at height: 100dvh on screen (see the layout
+     comment on .cgShell above), which exists to give .cgGrid whatever
+     height is left after .cgBar and .cgTabs on a fixed-height dashboard.
+     In paged media that same dvh resolves against the PAGE BOX, exactly
+     one page tall, so left as a flex column the shell caps the document
+     at a single page and .cgGrid's flex: 1; min-height: 0 explicitly
+     permits it to shrink below its content instead of flowing across
+     pages. Undo the flex column entirely here rather than trying to
+     override height alone: display: block is what makes .cgGrid stop
+     being a flex item, which is what makes its flex sizing stop applying.
+     A thirteen-clause contract is several pages; this has to keep
+     flowing, not fit one. */
+  .cgShell {
+    display: block;
+    height: auto;
+    min-height: 0;
+    background: #fff;
+  }
+
+  .cgGrid {
+    display: block;
+    height: auto;
+    /* belt and braces: with .cgShell no longer a flex container these two
+       are already inert, but stating that explicitly here means a later
+       edit to .cgShell's print rule can't silently revive them */
+    flex: none;
+    min-height: 0;
+  }
+
+  .cgCol,
+  .cgCol--paper {
+    overflow: visible;
+    height: auto;
+    padding: 0;
+    background: #fff;
+  }
+
+  /* @media (max-width: 1099px) below sets .cgCol--paper to display:none
+     whenever data-cg-tab="form", which is the desktop default and a state
+     a desktop visitor can never leave (the tab strip that would let them
+     switch to "preview" is itself display:none above that breakpoint). In
+     paged media, a width media query evaluates against the PAGE BOX, not
+     the browser window: @page above gives an A4 box with 18mm margins, an
+     effective content width of roughly 658px, which is under 1099px. So
+     that mobile-only rule fires during printing regardless of how wide the
+     actual window is, and Export -> Save as PDF renders a blank page. Force
+     the paper back with !important, which wins regardless of specificity
+     against that non-important rule, so printing never depends on which
+     tab was active or the window's screen width. */
+  .cgCol--paper {
+    display: block !important;
+  }
+
+  /* the paper defaults to light no matter what the screen THEME is (a
+     dark theme is chrome, and a dark document is a full page of toner
+     and unreadable on paper) - but it must yield to an explicit user
+     colour CHOICE (Task 2's --cg-doc-bg/--cg-doc-fg), because that is
+     not the screen theme, it is the document's own paint, and a user
+     who deliberately picked a dark background has every reason to
+     expect it in the PDF. --cg-doc-bg/--cg-doc-fg are only ever set
+     (inline, on this element - see DocPaper.tsx) when a colour was
+     actually chosen; unset, the var() falls through to the same #fff/
+     #111 this rule always hardcoded, so nothing changes for anyone who
+     has not touched the COLORS block. print-color-adjust is what makes
+     that background survive at all: Chrome and Safari strip background
+     colours when printing unless told not to, so without it a chosen
+     dark background would still silently print white. */
+  .cgDoc {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: var(--cg-doc-bg, #fff);
+    color: var(--cg-doc-fg, #111);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    box-shadow: none;
+    font-size: 10.5pt;
+  }
+
+  .cgDoc__ph {
+    background: none;
+    color: #111;
+  }
+
+  .cgDoc__clause {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cgDoc__sign {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cgDoc__title { font-size: 30pt; }
+  .cgDoc__h { font-size: 13pt; }
+
+  .cgDoc a { text-decoration: none; color: inherit; }
+}
+
+/* ---------- panel collapse ----------
+   Reduces a docked panel to a ~44px rail so the paper can reclaim the
+   width, per the reference this task is beating: FormPanel and SidePanel
+   each swap their normal content for a single .cgPanelRail (button plus
+   the panel's own name, rotated) when collapsed. The width change itself
+   is just --cg-form-w/--cg-side-w, animated by .cgGrid's own transition
+   (see above) and, once docked, by .cgSide's own width transition.
+
+   Both overrides are gated to the width where their panel is an actual
+   grid column rather than tab- or overlay-driven (>=1100px for the form,
+   >=1400px for the side panel, matching FormPanel's and SidePanel's own
+   docked checks) - collapsing a column that does not exist at the
+   current width would have nothing to animate. The attribute selector
+   here is more specific than the bare `.cgShell` rules that set these
+   same variables elsewhere in this file, so it wins regardless of the
+   two blocks' order in the cascade. */
+
+@media (min-width: 1100px) {
+  .cgShell[data-cg-panel-form="collapsed"] {
+    --cg-form-w: 44px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .cgShell[data-cg-panel-side="collapsed"] {
+    --cg-side-w: 44px;
+  }
+}
+
+.cgShell[data-cg-panel-form="collapsed"] .cgCol--form,
+.cgShell[data-cg-panel-side="collapsed"] .cgSide {
+  overflow: hidden;
+}
+
+.cgShell[data-cg-panel-form="collapsed"] .cgForm {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+.cgPanelRail {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  padding: 16px 0;
+  gap: 16px;
+}
+
+.cgPanelRail__label {
+  margin: 0;
+  color: var(--cg-fg-2);
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+/* ---------- responsive ---------- */
+
+/* hidden by default like .cgTabs used to be - the @media (max-width:
+   1099px) block below is what brings it back, and only there */
+.cgMobileTabs { display: none; }
+
+/* the panel gets a real third grid track once there is room for it
+   alongside the form at its full width; below this the form keeps its
+   wider --cg-form-w default and the panel is an overlay instead (see
+   .cgSide above).
+
+   1400, derived rather than picked. Docked chrome is form 360 + side
+   300 = 660, and the document measures about `paper - 99` (the column's
+   padding plus the sheet's own), capped at 820. Holding the document to
+   a 600px floor needs paper >= 699, so W >= 1359. 1400 clears that with
+   margin and gives roughly 641.
+
+   It was 1536 while a clause rail also sat in this row (form 360 + rail
+   190 + side 300 = 850 of fixed chrome). The rail is gone, so the old
+   number was stranding the panel as an overlay on 1440 laptops that now
+   have room to dock it. */
+@media (min-width: 1400px) {
+  .cgShell {
+    --cg-form-w: 360px;
+  }
+
+  .cgGrid {
+    grid-template-columns: var(--cg-form-w) 1fr var(--cg-side-w);
+  }
+
+  /* position/width only, not transform/box-shadow: those are overlay-only
+     declarations scoped to `@media (max-width: 1399px)` above and simply
+     do not exist at this width, so there is nothing here to reset */
+  .cgSide {
+    position: static;
+    width: var(--cg-side-w);
+  }
+}
+
+/* the toggle only exists to reveal the panel where it is an overlay and no
+   tab-driven control already reaches it; at 1400 and up the panel is a
+   permanent column and this button has nothing to do */
+@media (min-width: 1100px) and (max-width: 1399px) {
+  .cgBar__sideToggle { display: inline-flex; }
+}
+
+@media (max-width: 1099px) {
+  /* below the width the bottom tab bar (.cgMobileTabs, see
+     MobileTabBar.tsx) takes over Form/Document/Design switching, so the
+     overlay toggle and the docked panels' own collapse rail have nothing
+     to do: no toggle, no overlay open/close, no rail. .cgPanelToggle (the
+     form's own collapse button) is the same case - the tab bar already
+     owns showing the whole form, and FormPanel's own docked check keeps
+     the collapsed rail from ever rendering at this width anyway, so hide
+     the control rather than leave a button that visibly does nothing
+     when pressed. .cgSide is deliberately NOT in this list: unlike these
+     three it still has a way to be shown at this width (the Design tab,
+     below), so it cannot be blanket-!important-hidden the way a control
+     with no job left here can. */
+  .cgSide__backdrop,
+  .cgBar__sideToggle,
+  .cgPanelToggle {
+    display: none !important;
+  }
+
+  .cgGrid { grid-template-columns: 1fr; }
+
+  .cgShell[data-cg-tab="form"] .cgCol--paper { display: none; }
+
+  .cgShell[data-cg-tab="preview"] .cgCol--form { display: none; }
+
+  /* Design: the side panel becomes the tab's whole content instead of a
+     docked column or an overlay above one - the only way Skin/Colors/
+     Typography/Logo/Clauses/Export are reachable at all below 1100px.
+     .cgSide is display:none by default at this width (next rule); this
+     attribute selector is what brings it back, and its higher
+     specificity is what wins over both that bare rule and the
+     `@media (max-width: 1399px)` overlay block above (position/width/
+     transform), which are the same or lower specificity, so nothing is
+     left to fight the cascade regardless of source order. See
+     SidePanel.tsx's own useIsMobileNav for the matching JS-side switch:
+     the overlay's header/close button and backdrop have no business
+     existing at this width, and `inert` has to track real visibility
+     here rather than the `open` prop the overlay case uses. */
+  .cgSide { display: none; }
+
+  .cgShell[data-cg-tab="design"] .cgSide {
+    display: flex;
+    position: static;
+    width: 100%;
+    border-left: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .cgShell[data-cg-tab="design"] .cgCol--form,
+  .cgShell[data-cg-tab="design"] .cgCol--paper {
+    display: none;
+  }
+
+  /* This used to reserve var(--mnav-clear), 86px, for the site's fixed
+     mobile nav pill. That pill is not rendered on this route: /contract
+     is a full-screen tool and neither .navbar nor .mobileNav is in its
+     DOM (checked at runtime, and elementsFromPoint in that band returns
+     only .cgBar itself). So the clearance was 86px of dead space at the
+     top of every phone screen, which with the old top tab strip put
+     168px of chrome above the first field on an 844px viewport. That
+     strip is gone now (see .cgMobileTabs below, a bottom bar instead of
+     a second top row), so what is left above the content is .cgBar alone.
+
+     The safe-area inset stays: that clears a device notch, which is a
+     different concern from the nav pill and still applies here. */
+  .cgBar {
+    /* symmetric, so the row sits centred in the bar. It used to be
+       padding-top only, with nothing underneath, which left the logo and
+       Export hanging against the bottom edge. The inset still clears a
+       device notch and only ever grows the top. */
+    padding-top: max(12px, env(safe-area-inset-top, 12px));
+    padding-bottom: 12px;
+    height: auto;
+  }
+
+  /* Reset moves into the Design tab's own content (see SidePanel's
+     mobile controls block, which reuses this same class on its own copy
+     of the button - the selector below is scoped to `.cgBar` so it hides
+     only the toolbar's), and the completion ring moves next to the Form
+     tab in .cgMobileTabs, where it is actually informative rather than a
+     number nobody is looking at.
+
+     The theme toggle STAYS here. It was hidden with the other two when
+     the row still had to fit five controls, but switching light and dark
+     is a thing you reach for while reading the document, not while
+     configuring it, so burying it two taps deep in a tab was wrong. The
+     row now holds three: back link 94, toggle 36, Export 91, plus gaps
+     and padding is about 285 of 360 at the narrowest phone. */
+  .cgBar .cgRing,
+  .cgBar .cgBar__reset {
+    display: none;
+  }
+
+  /* The footer is pinned on desktop, where the panel is tall and a
+     signature reading as fixed furniture is right. On a phone it was
+     73px of an 844px screen permanently spent on a credit line, on top
+     of the chrome above. Let it scroll away with the fields instead:
+     the credit and the socials are still there, just at the end of the
+     form rather than sitting on it. */
+  .cgFoot {
+    position: static;
+    z-index: auto;
+  }
+  /* The title comes back and the wordmark goes, rather than both. At 360
+     the row cannot hold them together: back arrow 24, wordmark 70,
+     "Contract Generator" about 120, theme 36, Export 91, plus three gaps
+     and 32 of padding is well past the width. Naming the tool is worth
+     more here than repeating the site's mark, since the logo already
+     sits on every other page and a phone visitor arriving on this route
+     needs to know what it is. The back link keeps its arrow and its
+     aria-label, so it still says where it goes. */
+  .cgBar__logo { display: none; }
+  .cgBar__title {
+    display: block;
+    /* one line, always. The row is tight enough at 360 that the title
+       will wrap to two the moment it is allowed to, which doubles the
+       bar's height and shunts everything beside it off centre. */
+    white-space: nowrap;
+  }
+
+  /* 10 rather than 16: with the title back in the row, the three gaps
+     were what pushed it past the width at 360 and forced the wrap. */
+  .cgBar { gap: 10px; }
+
+  /* the Design tab's own Reset + theme row (see SidePanel.tsx): a plain
+     flex row, .cgBar__reset and .cgGhost already carry their own visuals
+     so there is nothing to style on the buttons themselves here */
+  .cgSide__mobileControls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---- bottom tab bar (MobileTabBar.tsx): Form / Document / Design ----
+     A genuine flex sibling of .cgBar and .cgGrid in .cgShell's own flex
+     column (see the comment at the top of this file), not a
+     position: fixed overlay - the same reasoning that keeps .cgFoot on
+     position: sticky rather than fixed elsewhere in this route. As a
+     layout sibling it can never cover the last field or the footer
+     credit by construction, and .cgGrid's own `flex: 1; min-height: 0`
+     already gives it exactly the height left over once this bar and
+     .cgBar are accounted for, with nothing to keep in sync by hand. */
+  .cgMobileTabs {
+    display: flex;
+    border-top: 1px solid var(--cg-line);
+    background: var(--cg-panel);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .cgMobileTabs__tab {
+    position: relative; /* anchors .cgMobileTabs__pct, see below */
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    /* matches --cg-bar-h so the two bars read as one family of furniture,
+       and comfortably clears the 44px touch-target minimum */
+    min-height: var(--cg-bar-h);
+    padding: 6px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--cg-fg-2);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  /* the icon (or the Form tab's ring) sits in its own quiet pill on
+     selection - the same --cg-line-2 wash .cgAcc__head's own pressed
+     state and the old segmented control both already used elsewhere in
+     this route, never a heavy fill, per the thin-outline default */
+  /* the selected tab's background wash, not a button in its own right -
+     the whole tab (min-height var(--cg-bar-h)) is the actual control and
+     hit target, this is only the indicator behind its icon. Left round
+     (--cg-round) rather than folded into the control system: it never
+     sits beside a rectangular sibling the way a toolbar button sits
+     beside an input, so there is no 999px-pill-next-to-8px-radius clash
+     for it to cause - see the polish report. */
+  .cgMobileTabs__iconWrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 26px;
+    border-radius: var(--cg-round);
+    color: inherit;
+    transition: background var(--dur-hover) var(--ease-quint);
+  }
+
+  .cgMobileTabs__tab[aria-selected="true"] {
+    color: var(--cg-fg);
+  }
+
+  .cgMobileTabs__tab[aria-selected="true"] .cgMobileTabs__iconWrap {
+    background: var(--cg-line-2);
+  }
+
+  .cgMobileTabs__icon,
+  .cgMobileTabs__ring {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cgMobileTabs__label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  /* the live percentage text: present for the aria-live announcement and
+     the tab's own accessible name (see MobileTabBar.tsx), but there is
+     no room to show it - the same visually-hidden technique the ring's
+     own text used at phone width before this bar existed */
+  .cgMobileTabs__pct {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .cgMobileTabs__tab {
+    transition: transform var(--dur-state) var(--ease-quint);
+  }
+
+  .cgMobileTabs__tab:active {
+    transform: scale(0.97);
+    transition-duration: var(--dur-press);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cgMobileTabs__tab,
+    .cgMobileTabs__iconWrap {
+      transition: none;
+    }
+
+    .cgMobileTabs__tab:active {
+      transform: none;
+      opacity: 0.7;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .cgShell { --cg-form-w: 100%; }
+  .cgCol--paper { padding: 12px; }
+
+  .cgDoc {
+    padding: 24px 20px;
+    font-size: 13px;
+  }
+
+  .cgField[data-half="true"] { flex: 1 1 100%; }
+}

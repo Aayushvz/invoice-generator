@@ -2,6 +2,19 @@ const withNextIntl = require("next-intl/plugin")("./i18n/request.ts");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    /*
+      This app is served at aayushvisuals.com/invoice-generator, which is a
+      rewrite in the portfolio pointing at this deployment. A rewrite alone
+      is not enough: Next emits absolute URLs for its own chunks, fonts and
+      API routes, so without a basePath every one of them would resolve
+      against the portfolio's origin and 404. basePath makes the app emit
+      the prefix itself, so what it asks for is what the rewrite forwards.
+
+      It applies to the deployment's own URL too - the Vercel URL serves
+      the app at /invoice-generator, not at /.
+    */
+    basePath: "/invoice-generator",
+
     serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
     webpack: (config) => {
         config.module.rules.push({

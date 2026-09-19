@@ -15,6 +15,27 @@ const nextConfig = {
     */
     basePath: "/invoice-generator",
 
+    /*
+      basePath means the deployment serves at /invoice-generator and its
+      root is nothing at all, so opening the Vercel URL bare gives a 404
+      that looks like a failed deploy rather than a path that moved. This
+      sends the root to the app.
+
+      basePath:false on the redirect is required: without it Next prefixes
+      the source too, making the rule /invoice-generator ->
+      /invoice-generator, which is a redirect loop.
+    */
+    async redirects() {
+        return [
+            {
+                source: "/",
+                destination: "/invoice-generator",
+                basePath: false,
+                permanent: false,
+            },
+        ];
+    },
+
     serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
     webpack: (config) => {
         config.module.rules.push({

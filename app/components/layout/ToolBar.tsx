@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { Link } from "@/i18n/navigation";
 
 import LogoMark from "@/app/components/reusables/LogoMark";
 import { FileDownIcon, MoonIcon, SunIcon } from "@/app/components/reusables/icons";
@@ -39,9 +40,12 @@ const ToolBar = () => {
 
     return (
         <header className="cgBar">
-            <a href="/" className="cgBar__back" aria-label="aayush vz, home">
+            {/* the locale-aware Link, not a bare <a>: a plain anchor to a
+                page in this app drops the client-side transition and the
+                current locale prefix, and Next lints it for exactly that. */}
+            <Link href="/" className="cgBar__back" aria-label="aayush vz, home">
                 <LogoMark className="cgBar__logo" />
-            </a>
+            </Link>
             <span className="cgBar__title">Invoice Generator</span>
             <span className="cgBar__spacer" />
 

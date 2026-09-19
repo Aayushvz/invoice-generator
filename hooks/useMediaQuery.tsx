@@ -54,7 +54,11 @@ export function useIsDesktop(): boolean {
  * with its own styling.
  */
 export function useIsShell(): boolean {
-    return useMediaQuery("(min-width: 1280px) and (min-height: 800px)");
+    /* Must stay identical to the `shell` screen in tailwind.config.js.
+       That one dropped its min-height:800px condition; this did not, so
+       markup branched on "not a shell" while the styling around it was
+       shelled, on every window under 800px tall. */
+    return useMediaQuery("(min-width: 1280px)");
 }
 
 export default useMediaQuery;

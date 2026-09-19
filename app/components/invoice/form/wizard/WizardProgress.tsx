@@ -5,12 +5,6 @@ import { useMemo } from "react";
 // RHF
 import { useFormContext, useWatch, type FieldErrors } from "react-hook-form";
 
-// ShadCn
-import { Progress } from "@/components/ui/progress";
-
-// Hooks
-import { useIsShell } from "@/hooks/useMediaQuery";
-
 // Contexts
 import { useWizard } from "@/contexts/WizardContext";
 import { useTranslationContext } from "@/contexts/TranslationContext";
@@ -21,12 +15,6 @@ import {
     WIZARD_WATCHED_FIELDS,
     isItemsStep,
 } from "@/lib/wizardSteps";
-
-// Utils
-import { cn } from "@/lib/utils";
-
-// Icons
-import { AlertCircle, Check } from "lucide-react";
 
 // Types
 import { InvoiceType, ItemType } from "@/types";
@@ -57,15 +45,6 @@ function hasError(errors: FieldErrors<InvoiceType>, path: string): boolean {
 
 const WizardProgress = () => {
     const { activeStep, stepCount, goToStep } = useWizard();
-
-    /*
-     * Branch in JS, not with `hidden`/`shell:block`.
-     *
-     * Rendering both shapes and hiding one with CSS put two complete <ol>s of
-     * step buttons in the DOM, so assistive technology announced ten steps for
-     * a five-step form.
-     */
-    const isShell = useIsShell();
 
     const {
         control,
@@ -148,36 +127,7 @@ const WizardProgress = () => {
         return "upcoming";
     };
 
-    /** Colours for the numbered marker. */
-    const markerStyles: Record<StepState, string> = {
-        invalid: "border-destructive bg-destructive text-destructive-foreground",
-        active: "border-primary bg-primary text-primary-foreground",
-        complete: "border-success bg-success text-success-foreground",
-        // Started but unfinished: clearly in progress, never mistakable for done
-        partial: "border-primary bg-primary/15 text-primary",
-        upcoming: "border-border bg-muted text-muted-foreground",
-    };
-
-    /** Colours for the label beside it, from sm up. */
-    const labelStyles: Record<StepState, string> = {
-        invalid: "text-destructive",
-        active: "text-foreground",
-        complete: "text-foreground",
-        partial: "text-muted-foreground",
-        upcoming: "text-muted-foreground",
-    };
-
     const activeStepData = steps[activeStep];
-    const activeStepState = activeStepData
-        ? getStepState(activeStepData)
-        : "upcoming";
-
-    const renderMarker = (step: Step, state: StepState, isActive: boolean) => {
-        if (isActive) return step.id + 1;
-        if (state === "invalid") return <AlertCircle className="h-3.5 w-3.5" />;
-        if (state === "complete") return <Check className="h-3.5 w-3.5" />;
-        return step.id + 1;
-    };
 
     const stepAriaLabel = (step: Step, state: StepState) =>
         `${_t("form.wizard.stepLabel")} ${step.id + 1}: ${step.label}${
@@ -191,170 +141,55 @@ const WizardProgress = () => {
         }`;
 
     /*
-     * Two shapes, one component.
+     * One shape at every width, and one control instead of three.
      *
-     * On a phone the five steps are a compact row of dots with the active
-     * step's name above — five labels do not fit in 375px. That row is signed
-     * off and unchanged.
+     * This was a name and a count, then a progress bar, then a row of five
+     * numbered circles carrying their own labels: three elements reporting
+     * the same fact. In the 360px panel the five labels truncated to
+     * "Fro...", "Invoi...", "Line ...", which is a label that has stopped
+     * being one, and the numbers were only ever ordinals the order already
+     * gave you.
      *
-     * At `shell`, where the form is a ~420px rail, the steps run left to
-     * right: five equal columns, a 28px numbered marker with its label
-     * wrapped beneath it.
+     * A segmented track carries all of it: five segments are the five steps,
+     * how many are filled is the progress, and the one label worth spelling
+     * out is the step you are on, named above it. Every segment is still the
+     * same button, so nothing about navigation changed.
      *
-     * No connecting rule between the markers. A line drawn behind them shows
-     * through the half-transparent "partial" marker, and the fixes for that
-     * (opaque backing plates, per-segment widths that have to account for the
-     * grid gap) cost more than the line is worth. Five numbered circles in a
-     * row already read as a sequence.
-     *
-     * The "SECTIONS" caption that headed the vertical list is gone too: the
-     * nav carries an aria-label, and in a rail whose whole problem is height
-     * a caption over five obviously-numbered steps is 22px spent on nothing.
+     * Branching on isShell is gone with it. That existed to pick between two
+     * shapes, and rendering both while hiding one put two <ol>s of steps in
+     * the DOM, which announced ten steps for a five-step form. One shape
+     * cannot have that problem.
      */
     return (
-        <nav
-            aria-label={_t("form.wizard.progressLabel")}
-            /* A rule under the steps, so the rail reads as chrome then work.
-               There was nothing dividing the stepper from the fields at all. */
-            className="mb-5 border-b border-border pb-4 shell:mb-4 shell:pb-3"
-        >
-            {/* Compact header + progress rule. */}
-            {!isShell && (
-                <div>
-                <div className="mb-2.5 flex items-baseline justify-between gap-3">
-                    <span className="truncate text-sm font-medium">
-                        {activeStepData?.label}
-                    </span>
-                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                        {_t("form.wizard.stepLabel")} {activeStep + 1} /{" "}
-                        {stepCount}
-                    </span>
-                </div>
+        <nav aria-label={_t("form.wizard.progressLabel")} className="cgWizard">
+            <div className="cgWizard__head">
+                <span className="cgWizard__name">{activeStepData?.label}</span>
+                <span className="cgWizard__count">
+                    {activeStep + 1}/{stepCount}
+                </span>
+            </div>
 
-                <Progress
-                    value={((activeStep + 1) / stepCount) * 100}
-                    indicatorClassName={cn(
-                        activeStepState === "invalid" && "bg-destructive"
-                    )}
-                />
+            <ol className="cgWizard__track">
+                {steps.map((step) => {
+                    const state = getStepState(step);
 
-                <ol className="mt-3 flex items-center gap-1.5 sm:gap-1">
-                    {steps.map((step) => {
-                        const state = getStepState(step);
-                        const isActive = step.id === activeStep;
-
-                        return (
-                            <li key={step.id} className="min-w-0 sm:flex-1">
-                                <button
-                                    type="button"
-                                    onClick={() => goToStep(step.id)}
-                                    aria-label={stepAriaLabel(step, state)}
-                                    aria-current={isActive ? "step" : undefined}
-                                    title={step.label}
-                                    className="flex w-full items-center gap-1.5 rounded-md transition-opacity hover:opacity-80 sm:gap-1"
-                                >
-                                    <span
-                                        className={cn(
-                                            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold sm:h-5 sm:w-5 sm:text-[10px]",
-                                            markerStyles[state]
-                                        )}
-                                    >
-                                        {renderMarker(step, state, isActive)}
-                                    </span>
-
-                                    <span
-                                        className={cn(
-                                            "hidden min-w-0 truncate text-start text-[11px] leading-tight sm:inline",
-                                            isActive
-                                                ? "font-semibold"
-                                                : "font-medium",
-                                            labelStyles[state]
-                                        )}
-                                    >
-                                        {step.label}
-                                    </span>
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ol>
-                </div>
-            )}
-
-            {/* Horizontal outline: the rail's table of contents. */}
-            {isShell && (
-                <ol className="grid grid-cols-5 gap-1">
-                    {steps.map((step) => {
-                        const state = getStepState(step);
-                        const isActive = step.id === activeStep;
-
-                        return (
-                            <li key={step.id} className="min-w-0">
-                                <button
-                                    type="button"
-                                    onClick={() => goToStep(step.id)}
-                                    aria-label={stepAriaLabel(step, state)}
-                                    aria-current={isActive ? "step" : undefined}
-                                    title={step.label}
-                                    className={cn(
-                                        "flex w-full flex-col items-center gap-1.5 rounded-lg px-0.5 py-1.5 transition-colors",
-                                        isActive
-                                            ? "bg-primary/10"
-                                            : "hover:bg-muted"
-                                    )}
-                                >
-                                    <span
-                                        className={cn(
-                                            "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold",
-                                            markerStyles[state]
-                                        )}
-                                    >
-                                        {renderMarker(step, state, isActive)}
-                                    </span>
-
-                                    {/*
-                                     * 12px, centred, up to three lines. It was
-                                     * 10px on two lines, which was simply too
-                                     * small to read; at 12px in a 76px column
-                                     * the longest label in the set —
-                                     * Portuguese "Informações de Pagamento" —
-                                     * needs the third line, and was being cut
-                                     * by 15px without it.
-                                     *
-                                     * `break-words` is load-bearing, not
-                                     * decoration: German "Zusammenfassung" is a
-                                     * single unbreakable word that overran the
-                                     * column by 12px and was then cut by
-                                     * line-clamp's overflow:hidden — silently,
-                                     * because the ellipsis only appears on the
-                                     * vertical clamp. Allowing a mid-word break
-                                     * turns that into a second line.
-                                     *
-                                     * `hyphens-auto` first, so that break lands
-                                     * somewhere a German reader expects rather
-                                     * than mid-syllable; <html lang> is set per
-                                     * locale, which is what the hyphenator
-                                     * keys off.
-                                     */}
-                                    <span
-                                        className={cn(
-                                            "line-clamp-3 w-full hyphens-auto break-words text-balance text-center text-xs leading-tight",
-                                            isActive
-                                                ? "font-semibold text-foreground"
-                                                : cn(
-                                                      "font-medium",
-                                                      labelStyles[state]
-                                                  )
-                                        )}
-                                    >
-                                        {step.label}
-                                    </span>
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ol>
-            )}
+                    return (
+                        <li key={step.id} className="cgWizard__seg">
+                            <button
+                                type="button"
+                                onClick={() => goToStep(step.id)}
+                                aria-label={stepAriaLabel(step, state)}
+                                aria-current={
+                                    step.id === activeStep ? "step" : undefined
+                                }
+                                title={step.label}
+                                data-state={state}
+                                className="cgWizard__segBtn"
+                            />
+                        </li>
+                    );
+                })}
+            </ol>
         </nav>
     );
 };

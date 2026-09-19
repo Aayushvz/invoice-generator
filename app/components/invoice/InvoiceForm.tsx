@@ -70,7 +70,17 @@ const InvoiceForm = () => {
                 <p className="cgForm__eyebrow">Invoice Details</p>
             </div>
 
-            <div className="mx-auto w-full min-h-0 max-w-2xl flex-1 overflow-y-auto overscroll-contain p-4 shell:p-5 xl:mx-0">
+            {/* deliberately NOT a scroll container. .cgCol--form is the
+                one scroller in this column, with .cgForm__bar sticky at
+                its top and .cgFoot sticky at its bottom.
+
+                This div used to carry overflow-y-auto + overscroll-contain
+                as well, which made the panel unscrollable: its content
+                fits exactly, so it could not scroll itself, and
+                overscroll-behavior:contain stopped the wheel chaining to
+                the column that could. Two nested scrollers, one of them
+                dead, swallowing every wheel event. */}
+            <div className="mx-auto w-full max-w-2xl p-4 shell:p-5 xl:mx-0">
                 {/*
                   * A meta row, not a heading.
                   *

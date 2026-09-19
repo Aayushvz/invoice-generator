@@ -4,26 +4,48 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/*
+ * Mapped onto the tool's control tokens rather than shadcn's defaults.
+ *
+ * The scale is: one radius (--cg-control-radius), one button height
+ * (--cg-control-h), one label size and weight. Before this the app had
+ * rounded-md at three heights (40/36/44) and a 14px label, none of which
+ * matched the toolbar, the panels or each other, which is most of why the
+ * controls read as a different product from the chrome around them.
+ *
+ * No focus ring here: .cgShell *:focus-visible draws a single accent
+ * outline, and this used to add a second one underneath it.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--cg-control-radius)] text-[length:var(--cg-control-label-size)] font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-[var(--cg-accent)] text-[var(--cg-accent-fg)] hover:opacity-90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-[var(--cg-line)] bg-transparent text-[var(--cg-fg)] hover:border-[var(--cg-fg-2)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-[var(--cg-field)] text-[var(--cg-fg)] hover:bg-[var(--cg-line-2)]",
+        ghost:
+          "text-[var(--cg-fg-2)] hover:bg-[var(--cg-line-2)] hover:text-[var(--cg-fg)]",
+        /*
+         * Was text-primary + underline. In this panel that produced a row
+         * of full-size accent-coloured sentences ("Add Custom Input",
+         * "+ Discount + Tax + Shipping") that shouted louder than the
+         * fields they belonged to and wrapped onto two lines. A quiet
+         * control that gains its accent on hover reads as secondary, which
+         * is what these are.
+         */
+        link: "h-auto px-0 text-[var(--cg-fg-2)] hover:text-[var(--cg-accent)]",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-[var(--cg-control-h)] px-[var(--cg-control-pad-x)]",
+        sm: "h-8 px-3",
+        lg: "h-[var(--cg-control-h)] px-6",
+        icon: "h-[var(--cg-control-h)] w-[var(--cg-control-h)]",
       },
     },
     defaultVariants: {

@@ -137,8 +137,12 @@ const SingleItem = ({
                         <GripVertical className="text-muted-foreground transition-colors hover:text-primary" />
                     </div>
 
-                    {/* Up Button */}
+                    {/* Up Button. Ghost, not filled: reordering is
+                        housekeeping, and two solid accent blocks at the top
+                        of every line item were the loudest thing on the
+                        step while being the least important. */}
                     <BaseButton
+                        variant="ghost"
                         size={"icon"}
                         tooltipLabel="Move the item up"
                         onClick={() => moveFieldUp(index)}
@@ -149,6 +153,7 @@ const SingleItem = ({
 
                     {/* Down Button */}
                     <BaseButton
+                        variant="ghost"
                         size={"icon"}
                         tooltipLabel="Move the item down"
                         onClick={() => moveFieldDown(index)}

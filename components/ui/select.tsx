@@ -19,7 +19,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-[var(--cg-field-h)] w-full items-center justify-between rounded-[var(--cg-control-radius)] border border-[var(--cg-line)] bg-[var(--cg-field)] px-3 text-[length:var(--cg-panel-input)] text-[var(--cg-fg)] placeholder:text-[var(--cg-fg-2)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}

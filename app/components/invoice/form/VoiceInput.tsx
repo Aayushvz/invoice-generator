@@ -400,7 +400,7 @@ const VoiceInput = ({ onItemsParsed }: VoiceInputProps) => {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            variant="secondary"
+                            variant="outline"
                             className="flex gap-2"
                             onClick={() => setIsOpen(true)}
                         >

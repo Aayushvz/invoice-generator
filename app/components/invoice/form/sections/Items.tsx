@@ -137,7 +137,12 @@ const Items = () => {
                 </SortableContext>
             </DndContext>
             <div className="flex flex-wrap gap-2">
+                {/* outline, not filled: Next is this panel's primary and
+                    adding a row is the step's own secondary action. Two
+                    filled controls side by side make neither one read as
+                    the thing to press. */}
                 <BaseButton
+                    variant="outline"
                     tooltipLabel="Add a new item to the list"
                     onClick={addNewField}
                 >

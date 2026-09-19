@@ -10,6 +10,7 @@ import {
     alexBrush,
     dancingScript,
     greatVibes,
+    generalSans,
     outfit,
     parisienne,
 } from "@/lib/fonts";
@@ -144,7 +145,7 @@ export default async function LocaleLayout(props: {
                 />
             </head>
             <body
-                className={`${outfit.className} ${dancingScript.variable} ${parisienne.variable} ${greatVibes.variable} ${alexBrush.variable}`}
+                className={`${generalSans.variable} ${outfit.className} ${dancingScript.variable} ${parisienne.variable} ${greatVibes.variable} ${alexBrush.variable}`}
                 suppressHydrationWarning
             >
                 <NextIntlClientProvider locale={locale} messages={messages}>

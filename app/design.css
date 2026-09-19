@@ -105,6 +105,13 @@
      left, regardless of which rows exist at the current width. 100dvh
      over 100vh so mobile browser chrome (the address bar showing/hiding)
      does not leave a sliver of the page scrollable. */
+  /* what the seven var(--font-primary) references below resolve to.
+     Declared here rather than on :root so it cannot reach past the tool,
+     the same containment rule the theme tokens follow. --font-general is
+     the next/font variable, see lib/fonts.ts. */
+  --font-primary: var(--font-general), "General Sans", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", monospace;
+
   display: flex;
   flex-direction: column;
   height: 100dvh;

@@ -1,3 +1,28 @@
+import localFont from "next/font/local";
+
+/*
+  General Sans, self-hosted, the same four weights the portfolio serves
+  and from the same files. This is what --font-primary resolves to, which
+  design.css asks for in seven places; until it existed here those rules
+  silently fell through to whatever the page inherited, so the tool was
+  wearing Outfit while claiming to match /contract.
+
+  next/font inlines the @font-face, preloads the files and generates a
+  size-adjusted fallback, so there is no layout shift and no third-party
+  round-trip.
+*/
+export const generalSans = localFont({
+    variable: "--font-general",
+    display: "swap",
+    fallback: ["system-ui", "sans-serif"],
+    src: [
+        { path: "../public/fonts/GeneralSans-Regular.woff2", weight: "400", style: "normal" },
+        { path: "../public/fonts/GeneralSans-Medium.woff2", weight: "500", style: "normal" },
+        { path: "../public/fonts/GeneralSans-Semibold.woff2", weight: "600", style: "normal" },
+        { path: "../public/fonts/GeneralSans-Bold.woff2", weight: "700", style: "normal" },
+    ],
+});
+
 // Next Google Fonts
 import {
     Alex_Brush,

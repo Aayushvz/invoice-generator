@@ -10,11 +10,11 @@ import { Form } from "@/components/ui/form";
 import {
     InvoiceActions,
     InvoiceForm,
-    MobileActionBar,
 } from "@/app/components";
 import ToolBar from "@/app/components/layout/ToolBar";
 import DocumentPanel from "@/app/components/layout/DocumentPanel";
 import { usePanels } from "@/contexts/PanelContext";
+import MobileTabBar from "@/app/components/layout/MobileTabBar";
 
 // Context
 import { useInvoiceContext } from "@/contexts/InvoiceContext";
@@ -33,7 +33,7 @@ const InvoiceMain = () => {
     const { onFormSubmit } = useInvoiceContext();
 
     const { formValidationError } = useToasts();
-    const { formCollapsed, sideCollapsed } = usePanels();
+    const { tab, formCollapsed, sideCollapsed } = usePanels();
 
     return (
         <Form {...formContext}>
@@ -44,6 +44,7 @@ const InvoiceMain = () => {
                     className="cgShell"
                     data-cg-panel-form={formCollapsed ? "collapsed" : "expanded"}
                     data-cg-panel-side={sideCollapsed ? "collapsed" : "expanded"}
+                    data-cg-tab={tab}
                 >
                     <ToolBar />
                     <div className="cgGrid">
@@ -55,10 +56,13 @@ const InvoiceMain = () => {
                         </div>
                         <DocumentPanel />
                     </div>
+
+                    {/* inside the shell, so it is a row of the 100dvh flex
+                        column rather than something overlapping the content.
+                        CSS hides it above 1099px. */}
+                    <MobileTabBar />
                 </div>
 
-                {/* Sticky Preview / Generate bar, below xl only */}
-                <MobileActionBar />
             </form>
         </Form>
     );

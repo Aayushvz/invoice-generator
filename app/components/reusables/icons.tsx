@@ -81,6 +81,28 @@ export function PanelCollapseRightIcon({ className }: IconProps) {
     );
 }
 
+export function FileTextIcon({ className }: IconProps) {
+    return (
+      <svg className={iconClass(className)} {...svgProps}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+        <path d="M14 2v6h6" />
+        <path d="M8 13h8M8 17h8M8 9h2" />
+      </svg>
+    );
+}
+
+export function PaletteIcon({ className }: IconProps) {
+    return (
+      <svg className={iconClass(className)} {...svgProps}>
+        <path d="M12 3a9 9 0 1 0 0 18h1.3a1.7 1.7 0 0 0 1.7-1.7c0-.45-.18-.86-.48-1.16a1.7 1.7 0 0 1 1.2-2.9H18a3 3 0 0 0 3-3C21 6.9 16.97 3 12 3Z" />
+        <circle cx="8.3" cy="8.4" r="1.05" fill="currentColor" stroke="none" />
+        <circle cx="12.4" cy="6.9" r="1.05" fill="currentColor" stroke="none" />
+        <circle cx="16.2" cy="9.4" r="1.05" fill="currentColor" stroke="none" />
+        <circle cx="6.9" cy="12.7" r="1.05" fill="currentColor" stroke="none" />
+      </svg>
+    );
+}
+
 /* ---------------------------------------------------------------
    Brand marks for the credit line. Filled, not stroked, and lifted
    verbatim from the portfolio's set rather than redrawn: Behance's is

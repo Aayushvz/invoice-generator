@@ -54,10 +54,10 @@ export async function generateMetadata(props: {
     const messages = await getMessages(locale);
     const meta = (messages as Record<string, Record<string, string>>)?.meta ?? {};
 
-    const title = meta.title ?? "Invoify | Free Invoice Generator";
+    const title = meta.title ?? "Invoice Generator - Aayush Raj";
     const description =
         meta.description ??
-        "Create invoices effortlessly with Invoify, the free invoice generator. Try it now!";
+        "Build an invoice, style it, and download the PDF. No account needed.";
 
     return {
         // Resolves every relative URL below, including the generated OG image.

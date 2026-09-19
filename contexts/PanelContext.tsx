@@ -17,7 +17,14 @@ import { createContext, useContext, useMemo, useState } from "react";
   with its form hidden looks broken.
 */
 
+/* which surface the phone layout is showing. Desktop ignores it: all
+   three columns are visible there, and design.css only reads
+   data-cg-tab below 1100px. */
+export type ShellTab = "form" | "preview" | "design";
+
 type PanelState = {
+    tab: ShellTab;
+    setTab: (t: ShellTab) => void;
     formCollapsed: boolean;
     setFormCollapsed: (v: boolean) => void;
     sideCollapsed: boolean;
@@ -29,15 +36,18 @@ const PanelContext = createContext<PanelState | null>(null);
 export function PanelProvider({ children }: { children: React.ReactNode }) {
     const [formCollapsed, setFormCollapsed] = useState(false);
     const [sideCollapsed, setSideCollapsed] = useState(false);
+    const [tab, setTab] = useState<ShellTab>("form");
 
     const value = useMemo(
         () => ({
+            tab,
+            setTab,
             formCollapsed,
             setFormCollapsed,
             sideCollapsed,
             setSideCollapsed,
         }),
-        [formCollapsed, sideCollapsed]
+        [tab, formCollapsed, sideCollapsed]
     );
 
     return (
